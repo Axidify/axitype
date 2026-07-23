@@ -1,4 +1,5 @@
 import { DRILLS, getDrill } from "../game/drills";
+import { FOCUS_UNLOCK_LEVEL, isFocusUnlocked } from "../game/focus";
 import { GAUNTLET_UNLOCK_LEVEL, isGauntletUnlocked } from "../game/gauntlet";
 import {
   accuracyGate,
@@ -16,6 +17,8 @@ interface LevelHubProps {
   onPlayLevel: (id: number) => void;
   onPractice: (timedSeconds?: number) => void;
   onGauntlet: () => void;
+  onFocus: () => void;
+  focusPreview?: string | null;
   onStats: () => void;
   onDrill: (kind: DrillKind, afterLevel: number) => void;
   onToggleFormCoach: () => void;
@@ -43,6 +46,8 @@ export function LevelHub({
   onPlayLevel,
   onPractice,
   onGauntlet,
+  onFocus,
+  focusPreview = null,
   onStats,
   onDrill,
   onToggleFormCoach,
@@ -54,6 +59,7 @@ export function LevelHub({
   const demo = progress.coachPrefs.demoMode;
   const continueId = Math.min(progress.unlockedLevel, 12);
   const gauntletOpen = isGauntletUnlocked(progress.unlockedLevel, demo);
+  const focusOpen = isFocusUnlocked(progress.unlockedLevel, demo);
   const gate = accuracyGate(progress.track);
   const showExplainer = !progress.coachPrefs.seenTrackExplainer;
   const showRetrainIntro =
@@ -97,6 +103,20 @@ export function LevelHub({
           </button>
           <button type="button" className={styles.secondary} onClick={() => onPractice(90)}>
             90s sprint
+          </button>
+          <button
+            type="button"
+            className={styles.focus}
+            disabled={!focusOpen}
+            onClick={onFocus}
+            title={
+              focusOpen
+                ? "Reads your stats, drills weak fingers/zones to 100% accuracy, then builds speed"
+                : `Unlocks at Mission ${FOCUS_UNLOCK_LEVEL}`
+            }
+          >
+            Focus
+            {focusPreview ? ` · ${focusPreview}` : ""}
           </button>
           <button
             type="button"

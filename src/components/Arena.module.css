@@ -41,6 +41,30 @@
   white-space: nowrap;
 }
 
+.focusCoach {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--good) 35%, var(--lane));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--good) 8%, white);
+  text-align: left;
+}
+
+.focusGoal {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.focusReason {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
 .back,
 .peek {
   border: 1px solid var(--lane);

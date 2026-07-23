@@ -179,6 +179,20 @@
   gap: 0.65rem;
 }
 
+.coachTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.gauntletFocus {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
 .missRow {
   display: flex;
   flex-wrap: wrap;

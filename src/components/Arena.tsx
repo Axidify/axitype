@@ -17,7 +17,7 @@ import styles from "./Arena.module.css";
 export interface ArenaResult {
   snapshot: EngineSnapshot;
   title: string;
-  levelId: number | "practice" | "drill" | "gauntlet";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
   drill?: DrillKind;
   keyEvents: { key: string; ms: number; hit: boolean }[];
 }
@@ -26,13 +26,15 @@ interface ArenaProps {
   title: string;
   prompt: string;
   progress: ProgressState;
-  levelId: number | "practice" | "drill" | "gauntlet";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
   drill?: DrillKind;
   lockFinger?: FingerId;
   eyesUp?: boolean;
   timedSeconds?: number;
   gauntletWave?: number;
   gauntletScore?: number;
+  focusGoal?: string;
+  focusReason?: string;
   demoMode?: boolean;
   onFinished: (result: ArenaResult) => void;
   onExit: () => void;
@@ -49,6 +51,8 @@ export function Arena({
   timedSeconds,
   gauntletWave,
   gauntletScore,
+  focusGoal,
+  focusReason,
   demoMode,
   onFinished,
   onExit,
@@ -232,6 +236,15 @@ export function Arena({
         paceGated={snap.paceGated}
         paceCoach={track === "retrain"}
       />
+
+      {levelId === "focus" && focusGoal && (
+        <div className={styles.focusCoach}>
+          <p className={styles.focusGoal}>
+            <strong>Goal:</strong> {focusGoal}
+          </p>
+          {focusReason && <p className={styles.focusReason}>{focusReason}</p>}
+        </div>
+      )}
 
       <LiveWpmChart data={snap.wpmSamples} live={!snap.finished} />
 
