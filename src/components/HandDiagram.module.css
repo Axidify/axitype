@@ -1,0 +1,60 @@
+.wrap {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.hand {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem 0.35rem;
+  border-radius: 999px 999px 12px 12px;
+  background: color-mix(in srgb, var(--lane) 35%, white);
+}
+
+.right {
+  flex-direction: row;
+}
+
+.tip {
+  width: 0.85rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  opacity: 0.45;
+  transform-origin: bottom center;
+}
+
+.tip:nth-child(1) {
+  height: 1.25rem;
+}
+.tip:nth-child(2) {
+  height: 1.55rem;
+}
+.tip:nth-child(3) {
+  height: 1.75rem;
+}
+.tip:nth-child(4) {
+  height: 1.5rem;
+}
+
+.on {
+  opacity: 1;
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.thumb {
+  width: 0.7rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--finger-thumb);
+  opacity: 0.4;
+  align-self: flex-end;
+  margin: 0 0.15rem;
+}
+
+.thumb.on {
+  opacity: 1;
+}

@@ -1,0 +1,54 @@
+.wrap {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.top h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.top button {
+  border: 1px solid var(--lane);
+  background: white;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+}
+
+.note {
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+}
+
+.ctaBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--lane);
+  border-radius: var(--radius);
+  background: white;
+}
+
+.cta {
+  border: none;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-weight: 700;
+}
+
+.wrap h2 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.05rem;
+}

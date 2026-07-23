@@ -1,0 +1,29 @@
+:root {
+  --bg-0: #e7eef6;
+  --bg-1: #f4f7fb;
+  --ink: #142033;
+  --ink-muted: #5a6b82;
+  --lane: #c5d3e5;
+  --accent: #ff5b2e;
+  --good: #0f9f8a;
+  --bad: #e23d4f;
+  --finger-lp: #7a8fa8;
+  --finger-lr: #5b9bb8;
+  --finger-lm: #4a9e8e;
+  --finger-li: #d4a04a;
+  --finger-ri: #d48a5a;
+  --finger-rm: #c46b7a;
+  --finger-rr: #8b7bb8;
+  --finger-rp: #6b7c94;
+  --finger-thumb: #8aa0b8;
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius: 10px;
+  --shadow-soft: 0 12px 40px rgba(20, 32, 51, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion: 0;
+  }
+}

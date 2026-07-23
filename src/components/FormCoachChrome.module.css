@@ -1,0 +1,39 @@
+.chrome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 3rem;
+}
+
+.chip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  align-items: baseline;
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lane) 40%, white);
+  font-size: 0.92rem;
+}
+
+.finger {
+  font-weight: 700;
+}
+
+.meta {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.cue {
+  color: var(--ink);
+}
+
+.tip {
+  margin: 0;
+  color: var(--bad);
+  font-weight: 600;
+  font-size: 0.95rem;
+}

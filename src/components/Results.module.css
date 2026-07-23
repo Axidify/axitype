@@ -1,0 +1,89 @@
+.wrap {
+  width: min(640px, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+.kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+
+.wrap h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.stars {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+}
+
+.unlock {
+  margin: 0;
+  color: var(--good);
+  font-weight: 700;
+}
+
+.note {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stats span {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stats strong {
+  font-size: 1.4rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.primary {
+  border: none;
+  background: var(--accent);
+  color: white;
+  padding: 0.7rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.secondary {
+  border: 1px solid var(--lane);
+  background: white;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+}

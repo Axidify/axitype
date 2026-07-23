@@ -1,0 +1,188 @@
+.hub {
+  width: min(880px, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 2.5rem 0 1.5rem;
+}
+
+.brand {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.tag {
+  margin: 0.5rem 0 1.25rem;
+  color: var(--ink-muted);
+  font-size: 1.1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.primary,
+.secondary,
+.track,
+.trackOn,
+.node,
+.drill {
+  font: inherit;
+}
+
+.primary {
+  border: none;
+  background: var(--accent);
+  color: white;
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.secondary {
+  border: 1px solid var(--lane);
+  background: white;
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.tracks {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.track,
+.trackOn {
+  border: 1px solid var(--lane);
+  background: white;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+}
+
+.trackOn {
+  background: var(--ink);
+  color: white;
+  border-color: var(--ink);
+}
+
+.trackHint {
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+}
+
+.prefs {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin: 0.75rem 0 1.5rem;
+  color: var(--ink-muted);
+}
+
+.prefs label {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.lane {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.node {
+  width: 100%;
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  text-align: left;
+  border: 1px solid var(--lane);
+  background: color-mix(in srgb, white 80%, var(--bg-1));
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+}
+
+.node:not(.locked):hover {
+  border-color: var(--accent);
+}
+
+.locked {
+  opacity: 0.45;
+}
+
+.num {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.meta strong {
+  font-weight: 650;
+}
+
+.badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 0.75rem;
+  color: var(--good);
+  font-weight: 700;
+}
+
+.drills {
+  margin-top: 2rem;
+}
+
+.drills h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.drillGrid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.drill {
+  text-align: left;
+  border: 1px solid var(--lane);
+  background: white;
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.drill span {
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}

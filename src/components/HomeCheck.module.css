@@ -1,0 +1,55 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg-0) 70%, transparent);
+  backdrop-filter: blur(4px);
+  z-index: 5;
+  border-radius: var(--radius);
+}
+
+.card {
+  width: min(420px, 92%);
+  padding: 1.5rem 1.35rem;
+  background: var(--bg-1);
+  border: 1px solid var(--lane);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.card h2 {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 1.75rem;
+}
+
+.copy {
+  margin: 0 0 0.75rem;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.retrain {
+  margin: 0 0 1rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.cta {
+  border: none;
+  background: var(--accent);
+  color: white;
+  padding: 0.7rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 650;
+  font-size: 1rem;
+}
