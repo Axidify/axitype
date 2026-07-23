@@ -1,0 +1,140 @@
+.wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 0 0 0.75rem;
+}
+
+.trigger {
+  border: 1px solid var(--lane);
+  background: color-mix(in srgb, var(--bg-1) 80%, white);
+  color: var(--ink);
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  z-index: 15;
+  width: min(320px, calc(100vw - 2rem));
+  padding: 0.85rem;
+  background: var(--bg-1);
+  border: 1px solid var(--lane);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+}
+
+.list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.item,
+.itemOn {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.item:hover {
+  background: color-mix(in srgb, var(--lane) 35%, transparent);
+}
+
+.itemOn {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--lane));
+  background: color-mix(in srgb, var(--accent) 10%, white);
+  font-weight: 650;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+}
+
+.primary,
+.secondary,
+.danger,
+.close {
+  border: none;
+  font: inherit;
+  font-weight: 650;
+  padding: 0.45rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--accent);
+  color: white;
+}
+
+.secondary {
+  background: white;
+  border: 1px solid var(--lane);
+  color: var(--ink);
+}
+
+.secondary:disabled,
+.danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.danger {
+  background: color-mix(in srgb, #c0392b 12%, white);
+  border: 1px solid color-mix(in srgb, #c0392b 35%, var(--lane));
+  color: color-mix(in srgb, #c0392b 80%, var(--ink));
+}
+
+.close {
+  width: 100%;
+  background: transparent;
+  color: var(--ink-muted);
+  border: 1px solid transparent;
+}
+
+.formTitle {
+  margin: 0 0 0.5rem;
+  font-weight: 650;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--lane);
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  margin-bottom: 0.55rem;
+}
+
+.error {
+  margin: 0 0 0.55rem;
+  color: color-mix(in srgb, #c0392b 80%, var(--ink));
+  font-size: 0.9rem;
+}

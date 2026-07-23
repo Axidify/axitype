@@ -17,12 +17,13 @@ npm run dev
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** PWA / offline install.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** v1.9 candidates — milestone surfacing or Insights polish (PWA / achievements deferred).
 
 ## What’s included
 
 - Learn / Retrain tracks with Form Coach (hand diagram, finger chip, reach cues)
 - 12 campaign missions + habit drills (One Finger, Home Return, Alternating Hands, Eyes Up, Weak Finger)
 - Focus rehab + Gauntlet waves; timed sprints; Daily challenge; paste-your-own practice; Stats Insights + progress backup
+- Local profiles (`axitype.profiles.v1`) — multiple named saves on one device
 - Live WPM sparkline (AxiCharts)
-- Adaptive weak-key prompts and localStorage progress (`axitype.v1`)
+- Adaptive weak-key prompts

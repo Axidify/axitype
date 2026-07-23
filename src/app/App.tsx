@@ -41,22 +41,34 @@ import type { FingerId } from "../game/fingers";
 import {
   aggregateMissCounts,
   formBadgeKey,
-  loadProgress,
-  saveProgress,
   updateKeyStat,
   type ProgressState,
 } from "../lib/storage";
 import {
-  trackAnalytics,
-  loadAnalytics,
+  appendAnalyticsEvent,
+  type AnalyticsEventInput,
   type DrillStartSource,
 } from "../lib/analytics";
 import { summarizeAnalytics } from "../lib/analyticsInsights";
 import {
-  parseProgressImport,
-  progressExportFilename,
-  serializeProgressExport,
+  parseBackupImport,
+  profileExportFilename,
+  serializeProfileExport,
 } from "../lib/progressBackup";
+import {
+  addProfile,
+  deleteProfile,
+  getActiveAnalytics,
+  getActiveProgress,
+  getActiveProfile,
+  loadProfileStoreFromLocalStorage,
+  renameProfile,
+  saveProfileStoreToLocalStorage,
+  setActiveAnalytics,
+  setActiveProgress,
+  switchActiveProfile,
+  type ProfileStore,
+} from "../lib/profiles";
 import styles from "./App.module.css";
 
 type View = "hub" | "arena" | "results" | "stats" | "focusGate";
@@ -132,7 +144,11 @@ function freshPrompt(build: () => string, avoid: string | null): string {
 }
 
 export default function App() {
-  const [progress, setProgress] = useState<ProgressState>(() => loadProgress());
+  const [profileStore, setProfileStore] = useState<ProfileStore>(() =>
+    loadProfileStoreFromLocalStorage(),
+  );
+  const progress = getActiveProgress(profileStore);
+  const activeProfile = getActiveProfile(profileStore);
   const [view, setView] = useState<View>("hub");
   const [session, setSession] = useState<Session | null>(null);
   const [lastResult, setLastResult] = useState<ArenaResult | null>(null);
@@ -146,8 +162,35 @@ export default function App() {
   const lastPromptRef = useRef<string | null>(null);
 
   useEffect(() => {
-    saveProgress(progress);
-  }, [progress]);
+    saveProfileStoreToLocalStorage(profileStore);
+  }, [profileStore]);
+
+  const setProgress = useCallback(
+    (updater: ProgressState | ((p: ProgressState) => ProgressState)) => {
+      setProfileStore((store) => {
+        const current = getActiveProgress(store);
+        const next = typeof updater === "function" ? updater(current) : updater;
+        return setActiveProgress(store, next);
+      });
+    },
+    [],
+  );
+
+  const trackEvent = useCallback((input: AnalyticsEventInput) => {
+    setProfileStore((store) =>
+      setActiveAnalytics(store, appendAnalyticsEvent(getActiveAnalytics(store), input)),
+    );
+  }, []);
+
+  const resetToHubForProfileChange = () => {
+    setSession(null);
+    setLastResult(null);
+    setGauntletSummary(null);
+    setFocusSummary(null);
+    setDailySummary(null);
+    setFocusGate(null);
+    setView("hub");
+  };
 
   const unlockedKeys = useMemo(() => {
     if (progress.coachPrefs.demoMode) {
@@ -172,7 +215,7 @@ export default function App() {
     demoMode: progress.coachPrefs.demoMode,
   });
 
-  const playInsights = () => summarizeAnalytics(loadAnalytics());
+  const playInsights = () => summarizeAnalytics(getActiveAnalytics(profileStore));
 
   const nextRunId = () => {
     runIdRef.current += 1;
@@ -203,7 +246,7 @@ export default function App() {
       timedSeconds: level.timedSeconds,
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "roundStarted", levelId: id, ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: id, ...analyticsBase() });
     setView("arena");
   };
 
@@ -227,7 +270,7 @@ export default function App() {
       timedSeconds,
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "roundStarted", levelId: "practice", ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: "practice", ...analyticsBase() });
     setView("arena");
   };
 
@@ -243,7 +286,7 @@ export default function App() {
       pasteSource: rawText,
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "roundStarted", levelId: "paste", ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: "paste", ...analyticsBase() });
     setView("arena");
   };
 
@@ -261,8 +304,8 @@ export default function App() {
       levelId: "daily",
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "dailyPlayed", date: dateKey, ...analyticsBase() });
-    trackAnalytics({ type: "roundStarted", levelId: "daily", ...analyticsBase() });
+    trackEvent({ type: "dailyPlayed", date: dateKey, ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: "daily", ...analyticsBase() });
     setView("arena");
   };
 
@@ -284,7 +327,7 @@ export default function App() {
       timedSeconds: config.timedSeconds,
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "roundStarted", levelId: "gauntlet", ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: "gauntlet", ...analyticsBase() });
     setView("arena");
   };
 
@@ -320,7 +363,7 @@ export default function App() {
       eyesUp: run.plan.eyesUp,
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "roundStarted", levelId: "focus", ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: "focus", ...analyticsBase() });
     setView("arena");
   };
 
@@ -626,14 +669,14 @@ export default function App() {
       eyesUp: built.eyesUp,
       runId: nextRunId(),
     });
-    trackAnalytics({ type: "drillStarted", kind, source, ...analyticsBase() });
-    trackAnalytics({ type: "roundStarted", levelId: "drill", drill: kind, ...analyticsBase() });
+    trackEvent({ type: "drillStarted", kind, source, ...analyticsBase() });
+    trackEvent({ type: "roundStarted", levelId: "drill", drill: kind, ...analyticsBase() });
     setView("arena");
   };
 
   const exitArena = () => {
     if (session) {
-      trackAnalytics({
+      trackEvent({
         type: "roundAbandoned",
         levelId: session.levelId,
         drill: session.drill,
@@ -645,7 +688,7 @@ export default function App() {
 
   const restartArena = () => {
     if (!session) return;
-    trackAnalytics({
+    trackEvent({
       type: "roundRestarted",
       levelId: session.levelId,
       drill: session.drill,
@@ -699,7 +742,7 @@ export default function App() {
     const { snapshot, levelId, drill, keyEvents } = result;
     const completed = snapshot.finished && !snapshot.timedOut;
 
-    trackAnalytics({
+    trackEvent({
       type: "roundCompleted",
       levelId,
       drill,
@@ -885,9 +928,37 @@ export default function App() {
       {view === "hub" && (
         <LevelHub
           progress={progress}
+          profiles={profileStore.profiles}
+          activeProfileId={profileStore.activeProfileId}
+          onSwitchProfile={(profileId) => {
+            const result = switchActiveProfile(profileStore, profileId);
+            if (!result.ok) return;
+            setProfileStore(result.store);
+            resetToHubForProfileChange();
+          }}
+          onCreateProfile={(name) => {
+            const result = addProfile(profileStore, name);
+            if (!result.ok) return result;
+            setProfileStore(result.store);
+            resetToHubForProfileChange();
+            return { ok: true };
+          }}
+          onRenameProfile={(profileId, name) => {
+            const result = renameProfile(profileStore, profileId, name);
+            if (!result.ok) return result;
+            setProfileStore(result.store);
+            return { ok: true };
+          }}
+          onDeleteProfile={(profileId) => {
+            const result = deleteProfile(profileStore, profileId);
+            if (!result.ok) return result;
+            setProfileStore(result.store);
+            resetToHubForProfileChange();
+            return { ok: true };
+          }}
           onTrack={(track: Track) => {
             if (track !== progress.track) {
-              trackAnalytics({
+              trackEvent({
                 type: "trackSwitched",
                 from: progress.track,
                 to: track,
@@ -1047,20 +1118,41 @@ export default function App() {
             startDrill(kind, afterLevel, missCounts, undefined, "stats")
           }
           onExportProgress={() => {
-            const blob = new Blob([serializeProgressExport(progress)], {
+            const blob = new Blob([serializeProfileExport(activeProfile)], {
               type: "application/json",
             });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = progressExportFilename();
+            a.download = profileExportFilename(activeProfile.name);
             a.click();
             URL.revokeObjectURL(url);
           }}
           onImportProgress={(fileText) => {
-            const result = parseProgressImport(fileText);
+            const result = parseBackupImport(fileText);
             if (!result.ok) return result;
-            saveProgress(result.progress);
+            if (result.mode === "store") {
+              setProfileStore(result.store);
+              resetToHubForProfileChange();
+              return { ok: true };
+            }
+            if (result.mode === "profile") {
+              setProfileStore((store) => ({
+                ...store,
+                profiles: store.profiles.map((p) =>
+                  p.id === store.activeProfileId
+                    ? {
+                        ...p,
+                        name: result.name,
+                        progress: result.progress,
+                        analytics: result.analytics,
+                        updatedAt: Date.now(),
+                      }
+                    : p,
+                ),
+              }));
+              return { ok: true };
+            }
             setProgress(result.progress);
             return { ok: true };
           }}
