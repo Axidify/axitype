@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Arena, type ArenaResult } from "../components/Arena";
 import { LevelHub } from "../components/LevelHub";
 import { Results } from "../components/Results";
@@ -28,6 +28,20 @@ interface Session {
   lockFinger?: FingerId;
   eyesUp?: boolean;
   timedSeconds?: number;
+  /** Bumps every start/retry so Arena remounts with a fresh run. */
+  runId: number;
+}
+
+function freshPrompt(build: () => string, avoid: string | null): string {
+  let next = build();
+  for (let i = 0; i < 20 && avoid && next === avoid; i++) {
+    next = build();
+  }
+  // Tiny key pools can still collide — rotate as a last resort.
+  if (avoid && next === avoid && next.length > 1) {
+    next = next.slice(1) + next[0];
+  }
+  return next;
 }
 
 export default function App() {
@@ -37,6 +51,8 @@ export default function App() {
   const [lastResult, setLastResult] = useState<ArenaResult | null>(null);
   const [lastStars, setLastStars] = useState(0);
   const [unlockedNext, setUnlockedNext] = useState(false);
+  const runIdRef = useRef(0);
+  const lastPromptRef = useRef<string | null>(null);
 
   useEffect(() => {
     saveProgress(progress);
@@ -57,47 +73,75 @@ export default function App() {
     setProgress((p) => fn(p));
   }, []);
 
+  const nextRunId = () => {
+    runIdRef.current += 1;
+    return runIdRef.current;
+  };
+
   const startLevel = (id: number) => {
     const level = getLevel(id);
-    const prompt = generatePrompt({
-      keys: level.keys,
-      length: level.length,
-      stats: progress.keyStats,
-      preferAlternating: id >= 6,
-    });
+    const prompt = freshPrompt(
+      () =>
+        generatePrompt({
+          keys: level.keys,
+          length: level.length,
+          stats: progress.keyStats,
+          preferAlternating: id >= 6,
+        }),
+      lastPromptRef.current,
+    );
+    lastPromptRef.current = prompt;
     setSession({
       title: level.title,
       prompt,
       levelId: id,
       eyesUp: Boolean(level.eyesUp && progress.track === "retrain"),
       timedSeconds: level.timedSeconds,
+      runId: nextRunId(),
     });
     setView("arena");
   };
 
   const startPractice = () => {
-    const prompt = generatePrompt({
-      keys: unlockedKeys,
-      length: 100,
-      stats: progress.keyStats,
-      preferAlternating: true,
+    const prompt = freshPrompt(
+      () =>
+        generatePrompt({
+          keys: unlockedKeys,
+          length: 100,
+          stats: progress.keyStats,
+          preferAlternating: true,
+        }),
+      lastPromptRef.current,
+    );
+    lastPromptRef.current = prompt;
+    setSession({
+      title: "Practice lane",
+      prompt,
+      levelId: "practice",
+      runId: nextRunId(),
     });
-    setSession({ title: "Practice lane", prompt, levelId: "practice" });
     setView("arena");
   };
 
-  const startDrill = (kind: DrillKind, afterLevel: number) => {
+  const startDrill = (kind: DrillKind, afterLevel: number, missCountsOverride?: Record<string, number>) => {
     const level = getLevel(Math.min(afterLevel, progress.unlockedLevel));
-    const built = buildDrillPrompt(kind, level.keys, progress.missCounts, progress.keyStats);
     const def = getDrill(kind);
+    const misses = missCountsOverride ?? progress.missCounts;
+    let built = buildDrillPrompt(kind, level.keys, misses, progress.keyStats);
+    const prompt = freshPrompt(() => {
+      built = buildDrillPrompt(kind, level.keys, misses, progress.keyStats);
+      return built.prompt;
+    }, lastPromptRef.current);
+    lastPromptRef.current = prompt;
     setSession({
       title: def.title,
-      prompt: built.prompt,
+      prompt,
       levelId: "drill",
       drill: kind,
       drillAfterLevel: afterLevel,
       lockFinger: built.lockFinger,
       eyesUp: built.eyesUp,
+      runId: nextRunId(),
     });
     setView("arena");
   };
@@ -119,7 +163,8 @@ export default function App() {
         progress.track,
         snapshot.peeked,
       );
-      if (stars >= 1 && levelId >= progress.unlockedLevel && levelId < 12) {
+      // Must clear the accuracy gate (2★+) to unlock the next mission.
+      if (stars >= 2 && levelId >= progress.unlockedLevel && levelId < 12) {
         unlocked = true;
       }
     } else if (levelId === "drill" && drill) {
@@ -140,10 +185,12 @@ export default function App() {
         formBadges: { ...p.formBadges },
       };
 
+      const roundMisses: Record<string, number> = {};
       for (const ev of keyEvents) {
         next.keyStats = updateKeyStat(next.keyStats, ev.key, ev.hit, ev.ms);
         if (!ev.hit) {
           next.missCounts[ev.key] = (next.missCounts[ev.key] ?? 0) + 1;
+          roundMisses[ev.key] = (roundMisses[ev.key] ?? 0) + 1;
         }
       }
 
@@ -177,6 +224,7 @@ export default function App() {
           accuracy: snapshot.accuracy,
           score: snapshot.score,
           stars,
+          missCounts: roundMisses,
         },
       ].slice(-40);
 
@@ -185,6 +233,16 @@ export default function App() {
 
     setView("results");
   };
+
+  const nextLevelId = useMemo(() => {
+    if (!lastResult) return null;
+    const completed = lastResult.snapshot.finished && !lastResult.snapshot.timedOut;
+    if (typeof lastResult.levelId !== "number" || !completed || lastResult.levelId >= 12) {
+      return null;
+    }
+    const next = lastResult.levelId + 1;
+    return next <= progress.unlockedLevel ? next : null;
+  }, [lastResult, progress.unlockedLevel]);
 
   return (
     <div className={styles.shell}>
@@ -222,6 +280,7 @@ export default function App() {
 
       {view === "arena" && session && (
         <Arena
+          key={session.runId}
           title={session.title}
           prompt={session.prompt}
           progress={progress}
@@ -244,17 +303,14 @@ export default function App() {
           track={progress.track}
           stars={lastStars}
           unlockedNext={unlockedNext}
+          nextLevelId={nextLevelId}
           onRetry={() => {
             if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
             else if (lastResult.drill && session?.drillAfterLevel)
               startDrill(lastResult.drill, session.drillAfterLevel);
             else startPractice();
           }}
-          onNext={() => {
-            if (typeof lastResult.levelId === "number" && lastResult.levelId < 12) {
-              startLevel(lastResult.levelId + 1);
-            } else setView("hub");
-          }}
+          onNext={startLevel}
           onHub={() => setView("hub")}
         />
       )}
@@ -263,7 +319,9 @@ export default function App() {
         <Stats
           progress={progress}
           onBack={() => setView("hub")}
-          onWeakFinger={() => startDrill("weakFinger", Math.min(9, progress.unlockedLevel))}
+          onWeakFinger={(missCounts) =>
+            startDrill("weakFinger", Math.min(9, progress.unlockedLevel), missCounts)
+          }
         />
       )}
     </div>

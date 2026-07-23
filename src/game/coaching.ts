@@ -11,20 +11,36 @@ export function tipForMiss(missIndex: number): string {
   return MISS_TIPS[missIndex % MISS_TIPS.length];
 }
 
+export const PACE_GATE_WINDOW = 20;
+export const PACE_GATE_MIN_SAMPLES = 8;
+export const PACE_GATE_THRESHOLD = 0.9;
+export const PACE_GATE_CLEAR_STREAK = 10;
+export const PACE_GATE_SCORE = 5;
+
+export const PACE_GATE_MESSAGE = "Slow down — reset to home";
+
 /** Pace gate: last N attempts accuracy below threshold. */
 export function shouldPaceGate(
   recent: boolean[],
-  windowSize = 20,
-  threshold = 0.9,
+  windowSize = PACE_GATE_WINDOW,
+  threshold = PACE_GATE_THRESHOLD,
 ): boolean {
-  if (recent.length < 8) return false;
+  if (recent.length < PACE_GATE_MIN_SAMPLES) return false;
   const slice = recent.slice(-windowSize);
   const correct = slice.filter(Boolean).length;
   return correct / slice.length < threshold;
 }
 
-export function paceGateCleared(correctStreak: number, need = 10): boolean {
+export function paceGateCleared(
+  correctStreak: number,
+  need = PACE_GATE_CLEAR_STREAK,
+): boolean {
   return correctStreak >= need;
+}
+
+export function recordAttempt(recent: boolean[], hit: boolean, windowSize = PACE_GATE_WINDOW): void {
+  recent.push(hit);
+  if (recent.length > windowSize) recent.shift();
 }
 
 export function showHandDiagram(

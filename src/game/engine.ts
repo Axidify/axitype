@@ -1,4 +1,10 @@
-import { paceGateCleared, shouldPaceGate, tipForMiss } from "./coaching";
+import {
+  PACE_GATE_SCORE,
+  paceGateCleared,
+  recordAttempt,
+  shouldPaceGate,
+  tipForMiss,
+} from "./coaching";
 import { calcAccuracy, calcWpm, nextCombo, scoreForCorrect } from "./scoring";
 
 export interface EngineConfig {
@@ -75,7 +81,7 @@ export class TypingEngine {
       finished: this.finished,
       timedOut: this.timedOut,
       wpm: calcWpm(this.correct, elapsed),
-      accuracy: calcAccuracy(this.correct, this.incorrect),
+      accuracy: calcAccuracy(this.incorrect, this.prompt.length),
       wpmSamples: [...this.wpmSamples],
       target: this.prompt[this.index] ?? "",
       lastMiss: this.lastMiss,
@@ -130,7 +136,7 @@ export class TypingEngine {
     if (raw === expected) {
       this.correct += 1;
       this.correctStreak += 1;
-      this.recent.push(true);
+      recordAttempt(this.recent, true);
       this.lastMiss = false;
       this.missTip = null;
       this.latencies.push({ key: expected, ms: latency, hit: true });
@@ -143,7 +149,7 @@ export class TypingEngine {
       if (!this.paceGated) {
         this.score += scoreForCorrect(this.combo);
       } else {
-        this.score += 5;
+        this.score += PACE_GATE_SCORE;
       }
 
       this.index += 1;
@@ -154,7 +160,7 @@ export class TypingEngine {
     } else {
       this.incorrect += 1;
       this.correctStreak = 0;
-      this.recent.push(false);
+      recordAttempt(this.recent, false);
       this.lastMiss = true;
       this.missCount += 1;
       this.missTip = tipForMiss(this.missCount);

@@ -15,6 +15,10 @@ npm run dev
 - `npm run build` — production build
 - `npm test` — Vitest unit tests
 
+## Roadmap
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for prioritized next steps (clarity, hybrid prompts, Retrain focus).
+
 ## What’s included
 
 - Learn / Retrain tracks with Form Coach (hand diagram, finger chip, reach cues)

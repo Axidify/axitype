@@ -1,10 +1,18 @@
 .hud {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.statsRow {
+  display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 1.25rem;
   align-items: flex-end;
   justify-content: center;
   min-height: 2.5rem;
+  width: 100%;
 }
 
 .stat {
@@ -31,10 +39,26 @@
   color: var(--accent);
 }
 
-.pace {
+.paceRow {
   width: 100%;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pace {
+  margin: 0;
   text-align: center;
   color: var(--accent);
   font-size: 0.95rem;
   font-weight: 600;
+}
+
+.paceHidden {
+  visibility: hidden;
+}
+
+.paceVisible {
+  visibility: visible;
 }

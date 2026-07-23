@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { calcStars } from "../game/scoring";
 import { getLevel, type DrillKind, type Track } from "../game/levels";
 import type { EngineSnapshot } from "../game/engine";
@@ -12,8 +13,9 @@ interface ResultsProps {
   track: Track;
   stars: number;
   unlockedNext: boolean;
+  nextLevelId: number | null;
   onRetry: () => void;
-  onNext: () => void;
+  onNext: (levelId: number) => void;
   onHub: () => void;
 }
 
@@ -24,6 +26,7 @@ export function Results({
   track,
   stars,
   unlockedNext,
+  nextLevelId,
   onRetry,
   onNext,
   onHub,
@@ -41,6 +44,17 @@ export function Results({
           snapshot.peeked,
         )
       : stars;
+
+  useEffect(() => {
+    if (nextLevelId === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "Space" && e.key !== " ") return;
+      e.preventDefault();
+      onNext(nextLevelId);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [nextLevelId, onNext]);
 
   return (
     <section className={styles.wrap}>
@@ -68,9 +82,9 @@ export function Results({
       <LiveWpmChart data={snapshot.wpmSamples} live={false} />
 
       <div className={styles.actions}>
-        {unlockedNext && typeof levelId === "number" && levelId < 12 && (
-          <button type="button" className={styles.primary} onClick={onNext}>
-            Next mission
+        {nextLevelId !== null && (
+          <button type="button" className={styles.primary} onClick={() => onNext(nextLevelId)}>
+            Next mission <span className={styles.kbd}>Space</span>
           </button>
         )}
         <button type="button" className={styles.secondary} onClick={onRetry}>

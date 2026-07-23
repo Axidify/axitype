@@ -7,10 +7,14 @@ export function calcWpm(correctChars: number, elapsedMs: number): number {
   return Math.round((correctChars / 5) / minutes);
 }
 
-export function calcAccuracy(correct: number, incorrect: number): number {
-  const total = correct + incorrect;
-  if (total === 0) return 100;
-  return Math.round((correct / total) * 1000) / 10;
+/**
+ * Grade accuracy against the prompt: start at 100%, each miss permanently
+ * costs 1 / promptLength. Correct keys never raise accuracy again.
+ */
+export function calcAccuracy(incorrect: number, promptLength: number): number {
+  if (promptLength <= 0) return 100;
+  const remaining = Math.max(0, promptLength - incorrect);
+  return Math.round((remaining / promptLength) * 1000) / 10;
 }
 
 export function scoreForCorrect(combo: number): number {

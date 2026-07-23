@@ -11,6 +11,7 @@ import { HomeCheck } from "./HomeCheck";
 import { Hud } from "./Hud";
 import { Keyboard } from "./Keyboard";
 import { LiveWpmChart } from "./charts/LiveWpmChart";
+import { PromptLine } from "./PromptLine";
 import styles from "./Arena.module.css";
 
 export interface ArenaResult {
@@ -180,10 +181,6 @@ export function Arena({
     return () => clearTimeout(t);
   }, [peekLeft, eyesUp]);
 
-  const before = snap.prompt.slice(0, snap.index);
-  const current = snap.prompt[snap.index] ?? "";
-  const after = snap.prompt.slice(snap.index + 1);
-
   return (
     <section className={styles.arena}>
       {!homeDone && (
@@ -208,19 +205,16 @@ export function Arena({
         accuracy={snap.accuracy}
         remainingMs={snap.remainingMs}
         paceGated={snap.paceGated}
+        paceCoach={track === "retrain"}
       />
 
       <LiveWpmChart data={snap.wpmSamples} live={!snap.finished} />
 
       <div className={styles.prompt} aria-live="polite">
-        {!snap.started && <p className={styles.hint}>Press any key to start</p>}
-        <p className={styles.line}>
-          <span className={styles.done}>{before}</span>
-          <span className={`${styles.caret} ${snap.lastMiss ? styles.miss : ""}`}>
-            {current === " " ? "␣" : current}
-          </span>
-          <span className={styles.todo}>{after}</span>
+        <p className={`${styles.hint} ${snap.started ? styles.hintIdle : ""}`}>
+          Press any key to start
         </p>
+        <PromptLine prompt={snap.prompt} index={snap.index} lastMiss={snap.lastMiss} />
       </div>
 
       {formCoach && (

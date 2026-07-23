@@ -16,7 +16,10 @@ export interface RoundHistoryEntry {
   accuracy: number;
   score: number;
   stars: number;
+  missCounts?: Record<string, number>;
 }
+
+export type MissStatsWindow = "recent12" | "week" | "all";
 
 export interface ProgressState {
   track: Track;
@@ -94,4 +97,39 @@ export function updateKeyStat(
 
 export function formBadgeKey(levelId: number, drill: DrillKind): string {
   return `L${levelId}:${drill}`;
+}
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function roundsForWindow(
+  roundHistory: RoundHistoryEntry[],
+  window: MissStatsWindow,
+  now = Date.now(),
+): RoundHistoryEntry[] {
+  if (window === "all") return roundHistory;
+  if (window === "recent12") return roundHistory.slice(-12);
+  return roundHistory.filter((round) => round.at >= now - WEEK_MS);
+}
+
+export function aggregateMissCounts(
+  progress: ProgressState,
+  window: MissStatsWindow,
+  now = Date.now(),
+): Record<string, number> {
+  if (window === "all") return progress.missCounts;
+
+  const out: Record<string, number> = {};
+  for (const round of roundsForWindow(progress.roundHistory, window, now)) {
+    if (!round.missCounts) continue;
+    for (const [key, count] of Object.entries(round.missCounts)) {
+      out[key] = (out[key] ?? 0) + count;
+    }
+  }
+  return out;
+}
+
+export function missCountsToEntries(counts: Record<string, number>): { key: string; count: number }[] {
+  return Object.entries(counts)
+    .map(([key, count]) => ({ key, count }))
+    .sort((a, b) => b.count - a.count);
 }
