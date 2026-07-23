@@ -17,7 +17,7 @@ npm run dev
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for prioritized next steps (clarity, hybrid prompts, Retrain focus).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** v1.2 in-app clarity (star rules, unlock copy, miss summary), then hybrid prompts and Retrain onboarding.
 
 ## What’s included
 

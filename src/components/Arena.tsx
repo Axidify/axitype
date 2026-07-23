@@ -31,6 +31,7 @@ interface ArenaProps {
   lockFinger?: FingerId;
   eyesUp?: boolean;
   timedSeconds?: number;
+  demoMode?: boolean;
   onFinished: (result: ArenaResult) => void;
   onExit: () => void;
 }
@@ -44,6 +45,7 @@ export function Arena({
   lockFinger,
   eyesUp,
   timedSeconds,
+  demoMode,
   onFinished,
   onExit,
 }: ArenaProps) {
@@ -183,6 +185,9 @@ export function Arena({
 
   return (
     <section className={styles.arena}>
+      {demoMode && (
+        <p className={styles.demoBanner}>Demo mode — results won&apos;t save</p>
+      )}
       {!homeDone && (
         <HomeCheck retrain={track === "retrain"} onStart={startFromHome} />
       )}

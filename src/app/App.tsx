@@ -5,7 +5,7 @@ import { Results } from "../components/Results";
 import { Stats } from "../components/Stats";
 import { buildDrillPrompt, getDrill } from "../game/drills";
 import { getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
-import { generatePrompt } from "../game/prompts";
+import { buildSessionPrompt, promptModeForLevel, promptModeForPractice } from "../game/prompts";
 import { calcStars } from "../game/scoring";
 import type { FingerId } from "../game/fingers";
 import {
@@ -25,6 +25,8 @@ interface Session {
   levelId: number | "practice" | "drill";
   drill?: DrillKind;
   drillAfterLevel?: number;
+  /** Mission to resume after a rehab drill launched from Results. */
+  returnToLevelId?: number;
   lockFinger?: FingerId;
   eyesUp?: boolean;
   timedSeconds?: number;
@@ -59,6 +61,9 @@ export default function App() {
   }, [progress]);
 
   const unlockedKeys = useMemo(() => {
+    if (progress.coachPrefs.demoMode) {
+      return LEVELS[LEVELS.length - 1].keys;
+    }
     const max = Math.min(progress.unlockedLevel, 12);
     const set = new Set<string>();
     for (const level of LEVELS) {
@@ -67,7 +72,7 @@ export default function App() {
       }
     }
     return [...set].join("") || "asdf";
-  }, [progress.unlockedLevel]);
+  }, [progress.unlockedLevel, progress.coachPrefs.demoMode]);
 
   const patchProgress = useCallback((fn: (p: ProgressState) => ProgressState) => {
     setProgress((p) => fn(p));
@@ -82,11 +87,14 @@ export default function App() {
     const level = getLevel(id);
     const prompt = freshPrompt(
       () =>
-        generatePrompt({
+        buildSessionPrompt({
+          mode: promptModeForLevel(id),
           keys: level.keys,
-          length: level.length,
+          targetLength: level.length,
+          levelId: id,
           stats: progress.keyStats,
           preferAlternating: id >= 6,
+          preferShort: Boolean(level.eyesUp),
         }),
       lastPromptRef.current,
     );
@@ -102,12 +110,13 @@ export default function App() {
     setView("arena");
   };
 
-  const startPractice = () => {
+  const startPractice = (timedSeconds?: number) => {
     const prompt = freshPrompt(
       () =>
-        generatePrompt({
+        buildSessionPrompt({
+          mode: promptModeForPractice(unlockedKeys),
           keys: unlockedKeys,
-          length: 100,
+          targetLength: timedSeconds ? 200 : 100,
           stats: progress.keyStats,
           preferAlternating: true,
         }),
@@ -115,16 +124,23 @@ export default function App() {
     );
     lastPromptRef.current = prompt;
     setSession({
-      title: "Practice lane",
+      title: timedSeconds ? `Practice · ${timedSeconds}s` : "Practice lane",
       prompt,
       levelId: "practice",
+      timedSeconds,
       runId: nextRunId(),
     });
     setView("arena");
   };
 
-  const startDrill = (kind: DrillKind, afterLevel: number, missCountsOverride?: Record<string, number>) => {
-    const level = getLevel(Math.min(afterLevel, progress.unlockedLevel));
+  const startDrill = (
+    kind: DrillKind,
+    afterLevel: number,
+    missCountsOverride?: Record<string, number>,
+    returnToLevelId?: number,
+  ) => {
+    const keyLevel = progress.coachPrefs.demoMode ? afterLevel : Math.min(afterLevel, progress.unlockedLevel);
+    const level = getLevel(keyLevel);
     const def = getDrill(kind);
     const misses = missCountsOverride ?? progress.missCounts;
     let built = buildDrillPrompt(kind, level.keys, misses, progress.keyStats);
@@ -139,6 +155,7 @@ export default function App() {
       levelId: "drill",
       drill: kind,
       drillAfterLevel: afterLevel,
+      returnToLevelId,
       lockFinger: built.lockFinger,
       eyesUp: built.eyesUp,
       runId: nextRunId(),
@@ -163,8 +180,7 @@ export default function App() {
         progress.track,
         snapshot.peeked,
       );
-      // Must clear the accuracy gate (2★+) to unlock the next mission.
-      if (stars >= 2 && levelId >= progress.unlockedLevel && levelId < 12) {
+      if (!progress.coachPrefs.demoMode && stars >= 2 && levelId >= progress.unlockedLevel && levelId < 12) {
         unlocked = true;
       }
     } else if (levelId === "drill" && drill) {
@@ -174,6 +190,11 @@ export default function App() {
     setLastStars(stars);
     setUnlockedNext(unlocked);
     setLastResult(result);
+
+    if (progress.coachPrefs.demoMode) {
+      setView("results");
+      return;
+    }
 
     setProgress((p) => {
       const next: ProgressState = {
@@ -275,6 +296,24 @@ export default function App() {
               coachPrefs: { ...p.coachPrefs, sound: !p.coachPrefs.sound },
             }))
           }
+          onToggleDemoMode={() =>
+            patchProgress((p) => ({
+              ...p,
+              coachPrefs: { ...p.coachPrefs, demoMode: !p.coachPrefs.demoMode },
+            }))
+          }
+          onDismissTrackExplainer={() =>
+            patchProgress((p) => ({
+              ...p,
+              coachPrefs: { ...p.coachPrefs, seenTrackExplainer: true },
+            }))
+          }
+          onDismissRetrainIntro={() =>
+            patchProgress((p) => ({
+              ...p,
+              coachPrefs: { ...p.coachPrefs, seenRetrainIntro: true },
+            }))
+          }
         />
       )}
 
@@ -289,6 +328,7 @@ export default function App() {
           lockFinger={session.lockFinger}
           eyesUp={session.eyesUp}
           timedSeconds={session.timedSeconds}
+          demoMode={progress.coachPrefs.demoMode}
           onFinished={applyResult}
           onExit={() => setView("hub")}
         />
@@ -303,15 +343,35 @@ export default function App() {
           track={progress.track}
           stars={lastStars}
           unlockedNext={unlockedNext}
-          nextLevelId={nextLevelId}
+          nextLevelId={progress.coachPrefs.demoMode ? null : nextLevelId}
+          demoMode={progress.coachPrefs.demoMode}
+          unlockedLevel={progress.unlockedLevel}
+          keyEvents={lastResult.keyEvents}
           onRetry={() => {
             if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
             else if (lastResult.drill && session?.drillAfterLevel)
-              startDrill(lastResult.drill, session.drillAfterLevel);
-            else startPractice();
+              startDrill(
+                lastResult.drill,
+                session.drillAfterLevel,
+                undefined,
+                session.returnToLevelId,
+              );
+            else startPractice(session?.timedSeconds);
           }}
           onNext={startLevel}
           onHub={() => setView("hub")}
+          returnToLevelId={
+            lastResult.levelId === "drill" ? session?.returnToLevelId ?? null : null
+          }
+          onReturnToMission={(id) => startLevel(id)}
+          onSuggestedDrill={(kind, afterLevel, missCounts) =>
+            startDrill(
+              kind,
+              afterLevel,
+              missCounts,
+              typeof lastResult.levelId === "number" ? lastResult.levelId : undefined,
+            )
+          }
         />
       )}
 

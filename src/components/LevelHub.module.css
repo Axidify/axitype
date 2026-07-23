@@ -1,7 +1,7 @@
 .hub {
-  width: min(880px, 100%);
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
+  padding: 1.5rem 0 3rem;
 }
 
 .hero {
@@ -81,6 +81,51 @@
   text-align: center;
   color: var(--ink-muted);
   font-size: 0.92rem;
+  margin: 0.85rem 0 0;
+}
+
+.legend {
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  max-width: 48rem;
+  margin: 0.75rem auto 0;
+}
+
+.explainer {
+  max-width: 42rem;
+  margin: 0.85rem auto 0;
+  padding: 0.9rem 1.15rem;
+  border: 1px solid var(--lane);
+  border-radius: var(--radius);
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  text-align: left;
+  font-size: 0.92rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+.explainer p {
+  margin: 0;
+}
+
+.explainer strong {
+  color: var(--ink);
+}
+
+.explainerDismiss {
+  align-self: flex-end;
+  margin-top: 0.25rem;
+  border: 1px solid var(--lane);
+  background: white;
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--ink);
 }
 
 .prefs {
@@ -97,12 +142,24 @@
   align-items: center;
 }
 
+.demoBanner {
+  margin: -0.5rem 0 1rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--lane));
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .lane {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.55rem;
+  gap: 0.45rem;
 }
 
 .node {
@@ -114,7 +171,7 @@
   border: 1px solid var(--lane);
   background: color-mix(in srgb, white 80%, var(--bg-1));
   border-radius: 10px;
-  padding: 0.7rem 0.85rem;
+  padding: 0.65rem 0.9rem;
 }
 
 .node:not(.locked):hover {
@@ -140,11 +197,36 @@
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.75rem;
 }
 
 .meta strong {
   font-weight: 650;
+}
+
+.stars {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.lockHint {
+  font-size: 0.8rem;
+  color: var(--accent);
+  line-height: 1.3;
+}
+
+.lockHint strong {
+  font-weight: 700;
 }
 
 .badge {
@@ -185,4 +267,13 @@
   color: var(--ink-muted);
   font-size: 0.88rem;
   line-height: 1.35;
+}
+
+.drillNeeded {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.drill:disabled {
+  opacity: 0.45;
 }

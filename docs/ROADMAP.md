@@ -1,8 +1,32 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.0.0  
-**Status:** Strong v1 — coherent tutor with a clear Retrain angle; next work should sharpen communication and double down on differentiation.
+**Current version:** v1.2.0  
+**Status:** Released — clarity, readable prompts, Retrain onboarding, timed practice, Results UX.
+
+---
+
+## Current focus (v1.5 — “Stickiness”)
+
+**Ship next (in order):**
+
+1. Local instrumentation (round/drill events)
+2. Remaining stats depth (accuracy trend, best per level)
+3. Visual polish pass
+4. Export / import progress
+
+**Just shipped (v1.2 — clarity + prompts + Retrain):**
+
+- Results star breakdown, unlock hints, miss coaching, Results UX hierarchy
+- Hybrid readable prompts (chunks / pseudo-words / sentences)
+- Retrain onboarding + smarter drill suggestions
+- Timed practice (60s / 90s), demo mode
+- Return-to-mission after rehab drills; thumb excluded from One Finger
+
+**Previously (v1.1):**
+- Wider layout + labeled WPM chart
+
+**Defer:** More stats depth, accounts, leaderboards, new missions beyond 12.
 
 ---
 
@@ -13,11 +37,13 @@ AxiType is a browser-based touch typing tutor with:
 - **Learn / Retrain tracks** — different coaching intensity and progression gates
 - **12 campaign missions** + **5 habit drills**
 - **Form Coach** — hand diagram, finger chip, home-row check, miss tips
-- **Adaptive prompts** — digraph chain with weak-key weighting from `keyStats`
+- **Hybrid prompts** — placement chunks (1–4), pseudo-words (5–9), sentences (10–12)
 - **Live WPM sparkline**, combo scoring, pace gating (Retrain)
 - **Local progress** — `localStorage` (`axitype.v1`), stats charts, star ratings
 
 **Core differentiator:** Retrain is not just “hard mode.” It is a structured path for breaking bad habits — mandatory drills between stages, stronger coaching, pace gates, Eyes Up sprints.
+
+**Positioning:** Stronger than most apps at habit rehab and form coaching; behind Keybr on per-key analytics depth and behind Monkeytype on speed-test variety / social features. Compete on Retrain, not breadth.
 
 **Main gaps vs mature typing apps:** in-app rule clarity, readable early prompts, broader timed/custom modes, accounts/leaderboards, deeper analytics.
 
@@ -30,15 +56,21 @@ AxiType is a browser-based touch typing tutor with:
 
 ## Completed / in progress
 
-Recent work not yet reflected in player-facing UX:
-
 | Item | Status | Notes |
 |------|--------|-------|
 | Stable prompt layout (`PromptLine`) | **Done** | Measure/paint pattern; no reflow on wrap |
-| Per-round `missCounts` in `roundHistory` | **Done** | `App.tsx` aggregates from `keyEvents` |
-| Stats time windows + keyboard heatmap | **Done** | Last 12 / 7 days / all time; `MissedKeysHeatmap` |
-| Post-mission miss coaching UI | **Not started** | Data exists; `Results.tsx` doesn’t use it yet |
-| Hybrid readable prompts | **Not started** | See [hybrid-prompt-text.md](./plans/hybrid-prompt-text.md) |
+| Per-round `missCounts` in `roundHistory` | **Done** | Saved on each round; powers time-windowed stats |
+| Stats time windows | **Done** | Last 12 rounds / last 7 days / all time |
+| Finger-zone miss heatmap | **Done** | `MissedKeysHeatmap`; intensity by miss count, color by finger |
+| Weak Finger CTA from Stats window | **Done** | Drill uses the selected time window’s misses |
+| Post-mission miss coaching UI | **Done** (this branch) | Results top-3 misses + Weak Finger CTA |
+| Results star breakdown | **Done** (this branch) | `explainStars` on Results |
+| Hub unlock / drill-gate copy | **Done** (this branch) | Mission cards + highlighted drill |
+| Track explainer + accuracy tip | **Done** (this branch) | `seenTrackExplainer`, HUD `?` |
+| Hybrid readable prompts | **Done** | `buildSessionPrompt`, chunks/pseudo/sentences — v1.3 |
+| Retrain onboarding | **Done** | `RetrainIntro.tsx`, `seenRetrainIntro` — v1.4 |
+| Smarter drill suggestions | **Done** | `suggestDrill()` on Results — v1.4 |
+| Timed practice sprints | **Done** | 60s / 90s from hub — v1.4 |
 
 ---
 
@@ -249,7 +281,7 @@ Avoid a separate heavy tutorial if P0 explainers land. Optional 3-step first-vis
 
 **Impact:** Medium · **Effort:** Medium
 
-**Already shipped:** time windows (last 12 / 7 days / all time), keyboard heatmap (`MissedKeysHeatmap`), Weak Finger CTA.
+**Already shipped:** time windows (last 12 / 7 days / all time), finger-zone keyboard heatmap (`MissedKeysHeatmap`), Weak Finger CTA (uses selected window).
 
 **Still to add:**
 - Accuracy trend chart (not just WPM)
@@ -331,30 +363,32 @@ Store in `roundHistory` metadata or a small `analytics.v1` key. No third-party S
                  └──────────────────┴──────────────────┘
 ```
 
-**Start here:** P0 items 1 → 4 → 5 → 6, then P1 item 7 (hybrid prompts).
+**Start here:** See [Current focus](#current-focus-v12--know-the-rules) — P0 clarity items, then hybrid prompts.
 
 ---
 
 ## Suggested release slices
 
-### v1.1 — “Know the rules”
+### v1.2 — “Know the rules”
 - Results star breakdown + unlock / timed-out hints
-- Hub track explainer
-- HUD accuracy tooltip
 - Mission unlock requirements on cards
 - Retrain drill-gate messaging on locked missions
 - Results miss summary (top keys this run)
+- Hub track explainer
+- HUD accuracy tooltip
 
-### v1.2 — “Readable drills”
+*Order matches [Current focus](#current-focus-v12--know-the-rules). Branch: `feature/know-the-rules`.*
+
+### v1.3 — “Readable drills”
 - Hybrid prompt system (per [hybrid-prompt-text.md](./plans/hybrid-prompt-text.md))
 - Drill spacing fixes (Home Return, Alternating Hands) — ship with prompts, not later
 
-### v1.3 — “Retrain matters”
-- Retrain onboarding (extends v1.1 explainers)
+### v1.4 — “Retrain matters”
+- Retrain onboarding (extends v1.2 explainers)
 - Full post-mission drill suggestions (P1 #9)
 - Optional timed practice
 
-### v1.4 — “Stickiness”
+### v1.5 — “Stickiness”
 - Local instrumentation (P2 #15)
 - Remaining stats depth (accuracy trend, best per level)
 - Visual polish pass
@@ -410,7 +444,7 @@ Requires P2 #15 instrumentation unless noted.
 
 AxiType’s path to a stronger v2 is not “more features.” It is:
 
-1. **Tell players the rules** (P0 — including Retrain drill locks)
+1. **Tell players the rules** (P0 / v1.2 — see [Current focus](#current-focus-v12--know-the-rules))
 2. **Make missions readable and teach intentionally** (P1 prompts)
 3. **Own the Retrain story** (P1 onboarding + miss coaching)
 

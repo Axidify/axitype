@@ -1,154 +1,165 @@
-import { fingerForKey, type FingerId, keysForFinger } from "./fingers";
+import type { DrillKind } from "./levels";
+import { fingerForKey, keysForFinger, type FingerId } from "./fingers";
 import type { KeyStatMap } from "../lib/storage";
+import {
+  allowedChars,
+  pickWeighted,
+  trimToLength,
+} from "./keyBias";
+import { generatePatternPrompt } from "./promptChunks";
+import { generatePseudoPrompt, generateOneFingerGroups } from "./pseudoWords";
+import { generateSentencePrompt } from "./sentences";
 
-const DIGRAPHS: Record<string, string> = {
-  a: "sdrfl ",
-  s: "adefw ",
-  d: "safec ",
-  f: "dgart ",
-  j: "hkunm ",
-  k: "jli,o ",
-  l: "k;o.p ",
-  ";": "l[p/' ",
-  e: "rdsiw ",
-  i: "uojk8 ",
-  r: "tfde4 ",
-  t: "ryfg5 ",
-  q: "wa ",
-  w: "qeas ",
-  y: "uhjt ",
-  u: "yihj ",
-  o: "iplk ",
-  p: "o;[ ",
-  z: "ax ",
-  x: "zsc ",
-  c: "xdv ",
-  v: "cbf ",
-  b: "vgn ",
-  n: "bmhj ",
-  m: "njik ",
-  " ": "etaoins ",
-  ".": "l ",
-  ",": "k ",
-  "'": "; ",
-};
+export { weakestKey } from "./keyBias";
 
-function weaknessWeight(key: string, stats: KeyStatMap | undefined): number {
-  if (!stats?.[key]) return 1;
-  const s = stats[key];
-  const total = s.hits + s.misses;
-  const missRate = total === 0 ? 0 : s.misses / total;
-  const latencyPenalty = Math.min(2, (s.meanLatencyMs || 200) / 400);
-  return 1 + missRate * 4 + latencyPenalty;
+export type PromptMode = "pattern" | "pseudo" | "sentence" | "drill";
+
+export function promptModeForLevel(levelId: number): "pattern" | "pseudo" | "sentence" {
+  if (levelId <= 4) return "pattern";
+  if (levelId <= 9) return "pseudo";
+  return "sentence";
 }
 
-function pickWeighted(chars: string[], stats?: KeyStatMap, focusBoost?: string): string {
-  const weights = chars.map((c) => {
-    let w = weaknessWeight(c, stats);
-    if (focusBoost && c === focusBoost) w *= 3;
-    return w;
-  });
-  const sum = weights.reduce((a, b) => a + b, 0);
-  let r = Math.random() * sum;
-  for (let i = 0; i < chars.length; i++) {
-    r -= weights[i];
-    if (r <= 0) return chars[i];
+export function promptModeForPractice(keys: string): "pseudo" | "sentence" {
+  const letterCount = keys.replace(/\s/g, "").length;
+  return letterCount >= 20 ? "sentence" : "pseudo";
+}
+
+export function buildSessionPrompt(opts: {
+  mode: PromptMode;
+  keys: string;
+  targetLength: number;
+  levelId?: number;
+  drill?: DrillKind;
+  stats?: KeyStatMap;
+  lockFinger?: FingerId;
+  preferAlternating?: boolean;
+  preferShort?: boolean;
+}): string {
+  switch (opts.mode) {
+    case "pattern":
+      return generatePatternPrompt(opts.levelId ?? 1, opts.keys, opts.targetLength, opts.stats);
+    case "pseudo":
+      return generatePseudoPrompt(
+        opts.keys,
+        opts.targetLength,
+        opts.stats,
+        opts.preferAlternating,
+      );
+    case "sentence":
+      return generateSentencePrompt(
+        opts.keys,
+        opts.targetLength,
+        opts.stats,
+        opts.preferShort,
+      );
+    case "drill":
+      return buildDrillPromptText(opts);
+    default:
+      return generatePseudoPrompt(opts.keys, opts.targetLength, opts.stats);
   }
-  return chars[chars.length - 1];
 }
 
-function allowedChars(keys: string): string[] {
-  return [...new Set(keys.split(""))];
+function buildDrillPromptText(opts: {
+  drill?: DrillKind;
+  keys: string;
+  targetLength: number;
+  stats?: KeyStatMap;
+  lockFinger?: FingerId;
+}): string {
+  switch (opts.drill) {
+    case "homeReturn":
+      return generateHomeReturnDrill(opts.keys, opts.targetLength, opts.stats);
+    case "oneFinger":
+    case "weakFinger":
+      return generateOneFingerDrill(opts.lockFinger ?? "LI", opts.targetLength, opts.stats);
+    case "alternatingHands":
+      return generateAlternatingDrill(opts.keys, opts.targetLength, opts.stats);
+    case "eyesUp":
+      return generateSentencePrompt(opts.keys, opts.targetLength, opts.stats, true);
+    default:
+      return generatePseudoPrompt(opts.keys, opts.targetLength, opts.stats);
+  }
 }
 
-function nextFromDigraph(prev: string, pool: string[], stats?: KeyStatMap, focus?: string): string {
-  const candidates = (DIGRAPHS[prev.toLowerCase()] ?? "")
-    .split("")
-    .filter((c) => pool.includes(c));
-  const options = candidates.length > 0 ? candidates : pool;
-  return pickWeighted(options, stats, focus);
-}
-
-export function weakestKey(pool: string[], stats?: KeyStatMap): string | undefined {
-  if (!stats || pool.length === 0) return undefined;
-  let worst: string | undefined;
-  let score = -1;
-  for (const k of pool) {
-    const s = stats[k];
-    if (!s) continue;
-    const total = s.hits + s.misses;
-    if (total < 3) continue;
-    const w = weaknessWeight(k, stats);
-    if (w > score) {
-      score = w;
-      worst = k;
+export function generateHomeReturnDrill(
+  keys: string,
+  targetLength: number,
+  stats?: KeyStatMap,
+): string {
+  const pool = allowedChars(keys);
+  let offHome = pool.filter((c) => !"asdfjkl; ".includes(c) && c !== " ");
+  if (offHome.length === 0) {
+    offHome = pool.filter((c) => c !== " ");
+  }
+  const units: string[] = [];
+  while (units.join("  ").length < targetLength) {
+    const reach = pickWeighted(offHome, stats);
+    const home = fingerForKey(reach).home;
+    if (pool.includes(home)) {
+      units.push(`${reach} ${home}`);
+    } else {
+      units.push(reach);
     }
   }
-  return worst;
+  return trimToLength(units.join("  "), targetLength);
 }
 
+export function generateAlternatingDrill(
+  keys: string,
+  targetLength: number,
+  stats?: KeyStatMap,
+): string {
+  const pool = allowedChars(keys).filter((c) => c !== " ");
+  const leftKeys = pool.filter((c) => fingerForKey(c).hand === "left");
+  const rightKeys = pool.filter((c) => fingerForKey(c).hand === "right");
+  if (leftKeys.length === 0 || rightKeys.length === 0) {
+    return generatePseudoPrompt(keys, targetLength, stats, true);
+  }
+  const units: string[] = [];
+  while (units.join(" ").length < targetLength) {
+    units.push(pickWeighted(leftKeys, stats) + pickWeighted(rightKeys, stats));
+  }
+  return trimToLength(units.join(" "), targetLength);
+}
+
+export function generateOneFingerDrill(
+  finger: FingerId,
+  targetLength: number,
+  stats?: KeyStatMap,
+): string {
+  // Thumb only owns space — not a useful one-finger rehab zone.
+  const target: FingerId = finger === "LT" || finger === "RT" ? "LI" : finger;
+  const keys = keysForFinger(target).filter((k) => /[a-z;,\.']/.test(k));
+  return generateOneFingerGroups(keys.length ? keys : ["f", "g", "r", "t"], targetLength, stats);
+}
+
+/** @deprecated Use buildSessionPrompt — kept for tests migrating off digraph output. */
 export function generatePrompt(options: {
   keys: string;
   length: number;
   stats?: KeyStatMap;
   preferAlternating?: boolean;
 }): string {
-  const pool = allowedChars(options.keys);
-  if (pool.length === 0) return "asdf";
-  const focus = weakestKey(pool, options.stats);
-  let out = "";
-  let prev = pickWeighted(pool.filter((c) => c !== " "), options.stats, focus);
-
-  for (let i = 0; i < options.length; i++) {
-    let next: string;
-    if (options.preferAlternating && i > 0) {
-      const prevHand = fingerForKey(prev).hand;
-      const alt = pool.filter((c) => {
-        const h = fingerForKey(c).hand;
-        return h !== prevHand && h !== "thumb";
-      });
-      next =
-        alt.length > 0
-          ? pickWeighted(alt, options.stats, focus)
-          : nextFromDigraph(prev, pool, options.stats, focus);
-    } else {
-      next = nextFromDigraph(prev, pool, options.stats, focus);
-    }
-    // Avoid huge runs of spaces
-    if (next === " " && (prev === " " || i === 0)) {
-      next = pickWeighted(
-        pool.filter((c) => c !== " "),
-        options.stats,
-        focus,
-      );
-    }
-    out += next;
-    prev = next;
-  }
-  return out.trimEnd() || pool[0].repeat(Math.min(8, options.length));
+  const letterCount = options.keys.replace(/\s/g, "").length;
+  const mode = letterCount >= 20 ? "sentence" : "pseudo";
+  return buildSessionPrompt({
+    mode,
+    keys: options.keys,
+    targetLength: options.length,
+    stats: options.stats,
+    preferAlternating: options.preferAlternating,
+  });
 }
 
 export function generateOneFingerPrompt(finger: FingerId, length = 50): string {
-  const keys = keysForFinger(finger).filter((k) => /[a-z;,\.\' ]/.test(k));
-  const pool = keys.length ? keys : ["a"];
-  return generatePrompt({ keys: pool.join(""), length, preferAlternating: false });
+  return generateOneFingerDrill(finger, length);
 }
 
 export function generateHomeReturnPrompt(keys: string, length = 60): string {
-  const pool = allowedChars(keys);
-  const offHome = pool.filter((c) => !"asdfjkl; ".includes(c));
-  if (offHome.length === 0) {
-    return generatePrompt({ keys, length });
-  }
-  let out = "";
-  while (out.length < length) {
-    const reach = pickWeighted(offHome);
-    const home = fingerForKey(reach).home;
-    out += reach + (pool.includes(home) ? home : " ");
-  }
-  return out.slice(0, length);
+  return generateHomeReturnDrill(keys, length);
 }
 
 export function generateAlternatingPrompt(keys: string, length = 70): string {
-  return generatePrompt({ keys, length, preferAlternating: true });
+  return generateAlternatingDrill(keys, length);
 }

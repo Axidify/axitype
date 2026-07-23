@@ -34,6 +34,9 @@ export interface ProgressState {
     formCoach: boolean;
     skipHomeAfter5: boolean;
     sound: boolean;
+    seenTrackExplainer: boolean;
+    seenRetrainIntro: boolean;
+    demoMode: boolean;
   };
 }
 
@@ -54,6 +57,9 @@ export function defaultProgress(): ProgressState {
       formCoach: true,
       skipHomeAfter5: false,
       sound: true,
+      seenTrackExplainer: false,
+      seenRetrainIntro: false,
+      demoMode: false,
     },
   };
 }

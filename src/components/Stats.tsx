@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { fingerForKey } from "../game/fingers";
-import { weakestFinger } from "../game/drills";
+import { weakestTypingFinger } from "../game/drills";
 import {
   aggregateMissCounts,
   missCountsToEntries,
@@ -34,7 +34,7 @@ export function Stats({ progress, onBack, onWeakFinger }: StatsProps) {
   const missCounts = aggregateMissCounts(progress, window);
   const misses = missCountsToEntries(missCounts);
 
-  const weak = weakestFinger(missCounts);
+  const weak = weakestTypingFinger(missCounts);
   const weakLabel = fingerForKey(
     Object.keys(missCounts).find((k) => fingerForKey(k).id === weak) ?? "f",
   ).label;
