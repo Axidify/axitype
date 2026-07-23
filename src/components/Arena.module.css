@@ -1,11 +1,22 @@
 .arena {
   position: relative;
-  width: min(960px, 100%);
+  width: 100%;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: 1rem 0 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+.demoBanner {
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--lane));
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 .top {

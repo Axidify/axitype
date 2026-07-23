@@ -28,6 +28,32 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.tipBtn {
+  border: 1px solid var(--lane);
+  background: white;
+  color: var(--ink-muted);
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  padding: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.accTip {
+  margin: 0;
+  max-width: 22rem;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--ink-muted);
 }
 
 .stat strong {

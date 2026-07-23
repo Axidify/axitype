@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PACE_GATE_MESSAGE } from "../game/coaching";
 import styles from "./Hud.module.css";
 
@@ -20,6 +21,8 @@ export function Hud({
   paceGated,
   paceCoach = false,
 }: HudProps) {
+  const [showAccTip, setShowAccTip] = useState(false);
+
   return (
     <div className={styles.hud}>
       <div className={styles.statsRow}>
@@ -36,7 +39,18 @@ export function Hud({
           <strong>{wpm}</strong>
         </div>
         <div className={styles.stat}>
-          <span className={styles.label}>Accuracy</span>
+          <span className={styles.label}>
+            Accuracy
+            <button
+              type="button"
+              className={styles.tipBtn}
+              aria-label="How accuracy works"
+              aria-expanded={showAccTip}
+              onClick={() => setShowAccTip((v) => !v)}
+            >
+              ?
+            </button>
+          </span>
           <strong>{accuracy}%</strong>
         </div>
         {remainingMs !== null && (
@@ -46,6 +60,13 @@ export function Hud({
           </div>
         )}
       </div>
+
+      {showAccTip && (
+        <p className={styles.accTip} role="note">
+          Accuracy = keys you got right out of the full prompt. Misses stick — correct keys never
+          raise it again.
+        </p>
+      )}
 
       {paceCoach && (
         <div className={styles.paceRow} role="status" aria-live="polite" aria-atomic="true">

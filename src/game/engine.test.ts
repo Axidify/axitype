@@ -13,7 +13,7 @@ import {
 import { TypingEngine } from "./engine";
 import { fingerForKey } from "./fingers";
 import { generatePrompt, weakestKey } from "./prompts";
-import { calcAccuracy, calcStars, calcWpm, scoreForCorrect } from "./scoring";
+import { calcAccuracy, calcStars, calcWpm, explainStars, scoreForCorrect } from "./scoring";
 import { getLevel } from "./levels";
 
 describe("scoring", () => {
@@ -36,6 +36,22 @@ describe("scoring", () => {
     expect(calcStars(true, 95, 5, level, "learn")).toBe(2);
     expect(calcStars(true, 80, 40, level, "learn")).toBe(1);
     expect(calcStars(false, 100, 40, level, "learn")).toBe(0);
+  });
+
+  it("explains stars and unlock hints", () => {
+    const level = getLevel(1);
+    const lowAcc = explainStars(true, 91.2, 20, level, "learn");
+    expect(lowAcc.stars).toBe(1);
+    expect(lowAcc.nextHint).toContain("94%");
+    expect(lowAcc.nextHint).toContain("91.2%");
+
+    const timed = explainStars(false, 100, 20, level, "learn", false, true);
+    expect(timed.stars).toBe(0);
+    expect(timed.nextHint).toMatch(/Timed out/i);
+
+    const peeked = explainStars(true, 100, 20, level, "learn", true);
+    expect(peeked.stars).toBe(2);
+    expect(peeked.nextHint).toMatch(/Peek/i);
   });
 });
 
