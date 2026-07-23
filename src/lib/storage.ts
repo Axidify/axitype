@@ -34,7 +34,8 @@ export interface ProgressState {
   };
 }
 
-const STORAGE_KEY = "keylane.v1";
+const STORAGE_KEY = "axitype.v1";
+const LEGACY_STORAGE_KEY = "keylane.v1";
 
 export function defaultProgress(): ProgressState {
   return {
@@ -56,7 +57,11 @@ export function defaultProgress(): ProgressState {
 
 export function loadProgress(): ProgressState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY, raw);
+    }
     if (!raw) return defaultProgress();
     const parsed = JSON.parse(raw) as Partial<ProgressState>;
     return { ...defaultProgress(), ...parsed, coachPrefs: { ...defaultProgress().coachPrefs, ...parsed.coachPrefs } };

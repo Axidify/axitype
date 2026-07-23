@@ -1,5 +1,5 @@
 import { QuickLineChart } from "@axicharts/charts/quick";
-import { keylaneCleanTheme } from "../../lib/chartTheme";
+import { axitypeCleanTheme } from "../../lib/chartTheme";
 
 interface ProgressTrendChartProps {
   wpm: number[];
@@ -15,7 +15,7 @@ export function ProgressTrendChart({ wpm, labels }: ProgressTrendChartProps) {
       data={wpm}
       labels={labels}
       height={220}
-      theme={keylaneCleanTheme}
+      theme={axitypeCleanTheme}
       mode="static"
       name="WPM"
       fill

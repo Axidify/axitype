@@ -41,7 +41,7 @@ export function LevelHub({
   return (
     <section className={styles.hub}>
       <header className={styles.hero}>
-        <p className={styles.brand}>Keylane</p>
+        <p className={styles.brand}>AxiType</p>
         <p className={styles.tag}>Train touch typing. Chase the combo.</p>
         <div className={styles.actions}>
           <button type="button" className={styles.primary} onClick={() => onPlayLevel(continueId)}>

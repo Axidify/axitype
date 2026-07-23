@@ -1,5 +1,5 @@
 import { QuickLineChart } from "@axicharts/charts/quick";
-import { keylaneLiveTheme } from "../../lib/chartTheme";
+import { axitypeLiveTheme } from "../../lib/chartTheme";
 import styles from "./LiveWpmChart.module.css";
 
 interface LiveWpmChartProps {
@@ -14,7 +14,7 @@ export function LiveWpmChart({ data, live = true }: LiveWpmChartProps) {
       <QuickLineChart
         data={series}
         height={80}
-        theme={keylaneLiveTheme}
+        theme={axitypeLiveTheme}
         mode={live ? "live" : "static"}
         name="WPM"
         fill
