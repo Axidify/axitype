@@ -1,4 +1,7 @@
 import type { DrillKind, Track } from "../game/levels";
+import type { DailyBest } from "../game/daily";
+
+export type { DailyBest };
 
 export interface KeyStat {
   hits: number;
@@ -8,9 +11,11 @@ export interface KeyStat {
 
 export type KeyStatMap = Record<string, KeyStat>;
 
+export type SessionLevelId = number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
+
 export interface RoundHistoryEntry {
   at: number;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
+  levelId: SessionLevelId;
   drill?: DrillKind;
   gauntletWave?: number;
   focusRound?: number;
@@ -36,6 +41,8 @@ export interface ProgressState {
   formBadges: Record<string, boolean>;
   bestByLevel: Record<number, { score: number; wpm: number; accuracy: number }>;
   gauntletBest?: GauntletBest;
+  /** Best completed run for a calendar day (YYYY-MM-DD). */
+  dailyBest?: DailyBest;
   roundHistory: RoundHistoryEntry[];
   missCounts: Record<string, number>;
   keyStats: KeyStatMap;

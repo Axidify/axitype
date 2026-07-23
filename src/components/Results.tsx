@@ -4,6 +4,7 @@ import {
   suggestDrill,
   topMissedKeys,
 } from "../game/drills";
+import { formatDailyLabel, type DailyBest } from "../game/daily";
 import { accuracyGate, getLevel, type DrillKind, type Track } from "../game/levels";
 import { gauntletAccuracyForWave } from "../game/gauntlet";
 import { explainStars } from "../game/scoring";
@@ -15,7 +16,7 @@ import styles from "./Results.module.css";
 interface ResultsProps {
   title: string;
   snapshot: EngineSnapshot;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
   drill?: DrillKind;
   track: Track;
   stars: number;
@@ -44,6 +45,15 @@ interface ResultsProps {
     targetWpm: number;
     lastFocusMisses: number;
   } | null;
+  dailySummary?: {
+    date: string;
+    wpm: number;
+    accuracy: number;
+    score: number;
+    completed: boolean;
+    isNewBest: boolean;
+    previousBest: DailyBest | null;
+  } | null;
   onRetry: () => void;
   onNext: (levelId: number) => void;
   onHub: () => void;
@@ -71,6 +81,7 @@ export function Results({
   gauntletSummary = null,
   gauntletBest,
   focusSummary = null,
+  dailySummary = null,
   onRetry,
   onNext,
   onHub,
@@ -82,6 +93,7 @@ export function Results({
   const completed = snapshot.finished && !snapshot.timedOut;
   const isGauntlet = levelId === "gauntlet" && gauntletSummary !== null;
   const isFocus = levelId === "focus" && focusSummary !== null;
+  const isDaily = levelId === "daily" && dailySummary !== null;
   const level = typeof levelId === "number" ? getLevel(levelId) : null;
   const isMission = level !== null;
   const canAdvance = nextLevelId !== null;
@@ -150,7 +162,11 @@ export function Results({
   const displayStars = breakdown?.stars ?? stars;
   const unlockedEnough = displayStars >= 2;
   const kicker =
-    isFocus
+    isDaily
+      ? dailySummary.isNewBest
+        ? "New daily best"
+        : "Daily challenge"
+      : isFocus
       ? "Zone cleared"
       : isGauntlet
       ? gauntletSummary.newBest
@@ -165,6 +181,21 @@ export function Results({
             : "Round over";
 
   const statusLine = (() => {
+    if (isDaily && dailySummary) {
+      if (demoMode) return "Demo run — daily best not saved";
+      if (!dailySummary.completed) {
+        return "Finish the full prompt to lock in a daily best.";
+      }
+      if (dailySummary.isNewBest) {
+        return dailySummary.previousBest
+          ? `Beat today's best — was ${dailySummary.previousBest.wpm} WPM.`
+          : `First clear for ${formatDailyLabel(dailySummary.date)}.`;
+      }
+      if (dailySummary.previousBest) {
+        return `Today's best stays ${dailySummary.previousBest.wpm} WPM · ${dailySummary.previousBest.accuracy}% — try again anytime.`;
+      }
+      return `Logged for ${formatDailyLabel(dailySummary.date)}.`;
+    }
     if (isFocus && focusSummary) {
       if (demoMode) return "Demo session — progress not saved";
       return `Nailed ${focusSummary.fingerLabel} at ${focusSummary.lastAccuracy}% accuracy, then hit ${focusSummary.lastWpm} WPM (target ${focusSummary.targetWpm}).`;
@@ -194,6 +225,7 @@ export function Results({
     (unlockedNext && !demoMode) ||
     (canReturnToMission && completed) ||
     isFocus ||
+    (isDaily && dailySummary?.isNewBest) ||
     (isGauntlet && gauntletSummary?.newBest)
       ? styles.statusGood
       : styles.statusHint;
@@ -223,6 +255,11 @@ export function Results({
             <strong>{focusSummary.fingerLabel}</strong> · {focusSummary.accuracyRounds} accuracy
             {focusSummary.accuracyRounds === 1 ? " round" : " rounds"} → {focusSummary.speedRounds}{" "}
             speed {focusSummary.speedRounds === 1 ? "round" : "rounds"}
+          </p>
+        ) : isDaily && dailySummary ? (
+          <p className={styles.gauntletHero}>
+            <strong>{dailySummary.wpm}</strong> WPM · {dailySummary.accuracy}% ·{" "}
+            {dailySummary.score.toLocaleString()} score
           </p>
         ) : (
           <p className={styles.stars}>
@@ -285,7 +322,13 @@ export function Results({
         ) : (
           <>
             <button type="button" className={styles.primary} onClick={onRetry}>
-              {isGauntlet ? "Run again" : isFocus ? "Train again" : "Retry"}{" "}
+              {isGauntlet
+                ? "Run again"
+                : isFocus
+                  ? "Train again"
+                  : isDaily
+                    ? "Try again"
+                    : "Retry"}{" "}
               <span className={styles.kbd}>Space</span>
             </button>
             <button type="button" className={styles.ghost} onClick={onHub}>

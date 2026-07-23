@@ -17,7 +17,7 @@ import styles from "./Arena.module.css";
 export interface ArenaResult {
   snapshot: EngineSnapshot;
   title: string;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
   drill?: DrillKind;
   keyEvents: { key: string; ms: number; hit: boolean }[];
 }
@@ -26,7 +26,7 @@ interface ArenaProps {
   title: string;
   prompt: string;
   progress: ProgressState;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
   drill?: DrillKind;
   lockFinger?: FingerId;
   eyesUp?: boolean;

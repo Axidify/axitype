@@ -22,6 +22,7 @@ export function roundShortLabel(entry: RoundHistoryEntry): string {
   if (entry.levelId === "drill") return "D";
   if (entry.levelId === "gauntlet") return "G";
   if (entry.levelId === "focus") return "F";
+  if (entry.levelId === "daily") return "Y";
   return "?";
 }
 
