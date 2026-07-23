@@ -10,10 +10,11 @@ import { getLevel, type DrillKind, type Track } from "./levels";
 import { weaknessWeight, weakestKey } from "./keyBias";
 import type { KeyStatMap } from "../lib/storage";
 import {
-  generateAlternatingDrill,
-  generateHomeReturnDrill,
-  generateOneFingerDrill,
-} from "./prompts";
+  type FocusWordComplexity,
+  generateFocusAlternatingWords,
+  generateFocusFingerWords,
+  generateFocusReachWords,
+} from "./pseudoWords";
 
 /** Minimum campaign mission cleared before Focus unlocks. */
 export const FOCUS_UNLOCK_LEVEL = 3;
@@ -357,26 +358,60 @@ export function focusCoachGoal(run: FocusRunState): string {
   return `${run.targetWpm} WPM · zero focus misses`;
 }
 
+function rehabFinger(finger: FingerId): FingerId {
+  return finger === "LT" || finger === "RT" ? "LI" : finger;
+}
+
+/** Word length and hand-alternation ramp with phase and speed tier. */
+export function focusPromptComplexity(phase: FocusPhase, speedTier: number): FocusWordComplexity {
+  if (phase === "accuracy") {
+    return { minWordSyllables: 1, maxWordSyllables: 2, preferAlternating: false };
+  }
+  const tier = Math.max(1, speedTier);
+  return {
+    minWordSyllables: 2,
+    maxWordSyllables: Math.min(2 + tier, 5),
+    preferAlternating: tier >= 2,
+  };
+}
+
 export function buildFocusPrompt(
   plan: FocusPlan,
   phase: FocusPhase,
   keys: string,
   missCounts: Record<string, number>,
   stats?: KeyStatMap,
+  speedTier = 1,
 ): string {
   const length = phase === "accuracy" ? ACCURACY_LENGTH : SPEED_LENGTH;
-  const finger = plan.lockFinger ?? weakestTypingFinger(missCounts);
+  const finger = rehabFinger(plan.lockFinger ?? weakestTypingFinger(missCounts));
   const boost = plan.weakKey ?? primaryFocusKey(plan, missCounts);
+  const complexity = focusPromptComplexity(phase, speedTier);
+  const fingerKeys = keysForFinger(finger).filter((k) => /[a-z;,\.']/.test(k));
 
   switch (plan.kind) {
     case "oneFinger":
-      return generateOneFingerDrill(finger, length, stats, boost);
+      return generateFocusFingerWords(
+        keys,
+        fingerKeys.length > 0 ? fingerKeys : ["f", "g", "r", "t"],
+        length,
+        complexity,
+        stats,
+        boost,
+      );
     case "homeReturn":
-      return generateHomeReturnDrill(keys, length, stats, boost);
+      return generateFocusReachWords(keys, length, complexity, stats, boost);
     case "alternatingHands":
-      return generateAlternatingDrill(keys, length, stats, boost);
+      return generateFocusAlternatingWords(keys, length, complexity, stats, boost);
     default:
-      return generateOneFingerDrill(finger, length, stats, boost);
+      return generateFocusFingerWords(
+        keys,
+        fingerKeys.length > 0 ? fingerKeys : ["f", "g", "r", "t"],
+        length,
+        complexity,
+        stats,
+        boost,
+      );
   }
 }
 

@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   analyzeWeakness,
   buildFocusPlan,
+  buildFocusPrompt,
   countFocusMisses,
   focusFailureHint,
+  focusPromptComplexity,
   focusRoundPassed,
   focusSpeedTarget,
   isFocusUnlocked,
@@ -82,5 +84,19 @@ describe("focus mode", () => {
     expect(focusSpeedTarget(6, "learn", [18, 20, 22], 2)).toBeGreaterThan(
       focusSpeedTarget(6, "learn", [18, 20, 22], 1),
     );
+  });
+
+  it("ramps word complexity in the speed phase", () => {
+    const accuracy = focusPromptComplexity("accuracy", 1);
+    const speed = focusPromptComplexity("speed", 3);
+    expect(speed.maxWordSyllables).toBeGreaterThan(accuracy.maxWordSyllables);
+    expect(speed.preferAlternating).toBe(true);
+  });
+
+  it("builds syllable-shaped focus prompts", () => {
+    const plan = buildFocusPlan({ f: 3 }, {}, "asdfjkl;qwerty ");
+    const prompt = buildFocusPrompt(plan, "accuracy", "asdfjkl;qwerty ", { f: 3 });
+    expect(prompt).not.toMatch(/\b([a-z;])\1\1\b/);
+    expect(prompt.split(/\s+/).some((word) => word.length >= 3)).toBe(true);
   });
 });
