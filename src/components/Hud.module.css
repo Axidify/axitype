@@ -65,6 +65,28 @@
   color: var(--accent);
 }
 
+.comboPop strong {
+  animation: comboPop calc(var(--motion, 1) * 280ms) var(--ease-snap, ease-out);
+}
+
+@keyframes comboPop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comboPop strong {
+    animation: none;
+  }
+}
+
 .paceRow {
   width: 100%;
   min-height: 1.5rem;

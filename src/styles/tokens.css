@@ -20,6 +20,8 @@
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --radius: 10px;
   --shadow-soft: 0 12px 40px rgba(20, 32, 51, 0.08);
+  --motion: 1;
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

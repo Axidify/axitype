@@ -38,6 +38,8 @@ interface ArenaProps {
   demoMode?: boolean;
   onFinished: (result: ArenaResult) => void;
   onExit: () => void;
+  /** Fresh start of the same challenge without returning to hub. */
+  onRestart?: () => void;
 }
 
 export function Arena({
@@ -56,6 +58,7 @@ export function Arena({
   demoMode,
   onFinished,
   onExit,
+  onRestart,
 }: ArenaProps) {
   const track: Track = progress.track;
   const formCoach = progress.coachPrefs.formCoach || track === "retrain";
@@ -69,6 +72,12 @@ export function Arena({
   const [homeDone, setHomeDone] = useState(!needsHome);
   const [hideKeyboard, setHideKeyboard] = useState(Boolean(eyesUp));
   const [peekLeft, setPeekLeft] = useState(0);
+  const [promptFlash, setPromptFlash] = useState<{ kind: "hit" | "miss"; id: number } | null>(
+    null,
+  );
+  const [keyFlash, setKeyFlash] = useState<{ key: string; kind: "hit" | "miss"; id: number } | null>(
+    null,
+  );
   const engineRef = useRef<TypingEngine | null>(null);
   const finishedRef = useRef(false);
   const onFinishedRef = useRef(onFinished);
@@ -103,6 +112,8 @@ export function Arena({
     });
     engineRef.current = engine;
     setSnap(engine.getSnapshot());
+    setPromptFlash(null);
+    setKeyFlash(null);
     const id = setInterval(() => {
       if (!engineRef.current) return;
       const s = engineRef.current.getSnapshot();
@@ -148,6 +159,14 @@ export function Arena({
       if (!engine) return;
       const next = engine.handleKey(e.key);
       setSnap(next);
+      const id = Date.now();
+      if (next.lastMiss) {
+        setPromptFlash({ kind: "miss", id });
+        setKeyFlash({ key: next.target, kind: "miss", id });
+      } else if (next.started) {
+        setPromptFlash({ kind: "hit", id });
+        setKeyFlash({ key: e.key, kind: "hit", id });
+      }
       if (progress.coachPrefs.sound) {
         if (next.lastMiss) playMiss();
         else if (next.started) playCorrect(next.combo);
@@ -156,6 +175,18 @@ export function Arena({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [homeDone, onExit, progress.coachPrefs.sound]);
+
+  useEffect(() => {
+    if (!promptFlash) return;
+    const t = setTimeout(() => setPromptFlash(null), 220);
+    return () => clearTimeout(t);
+  }, [promptFlash]);
+
+  useEffect(() => {
+    if (!keyFlash) return;
+    const t = setTimeout(() => setKeyFlash(null), 140);
+    return () => clearTimeout(t);
+  }, [keyFlash]);
 
   useEffect(() => {
     if (!homeDone) return;
@@ -213,9 +244,16 @@ export function Arena({
         <HomeCheck retrain={track === "retrain"} onStart={startFromHome} />
       )}
       <header className={styles.top}>
-        <button type="button" className={styles.back} onClick={onExit}>
-          Exit
-        </button>
+        <div className={styles.topLeft}>
+          <button type="button" className={styles.back} onClick={onExit}>
+            Exit
+          </button>
+          {onRestart && (
+            <button type="button" className={styles.restart} onClick={onRestart}>
+              Restart
+            </button>
+          )}
+        </div>
         <h1>{title}</h1>
         {levelId === "gauntlet" && gauntletScore !== undefined && gauntletScore > 0 && (
           <span className={styles.gauntletScore}>Run {gauntletScore.toLocaleString()}</span>
@@ -248,7 +286,16 @@ export function Arena({
 
       <LiveWpmChart data={snap.wpmSamples} live={!snap.finished} />
 
-      <div className={styles.prompt} aria-live="polite">
+      <div
+        className={`${styles.prompt} ${
+          promptFlash?.kind === "hit"
+            ? styles.promptHit
+            : promptFlash?.kind === "miss"
+              ? styles.promptMiss
+              : ""
+        }`}
+        aria-live="polite"
+      >
         <p className={`${styles.hint} ${snap.started ? styles.hintIdle : ""}`}>
           Press any key to start
         </p>
@@ -268,7 +315,8 @@ export function Arena({
         activeFinger={activeFinger}
         dimInactive={track === "retrain"}
         hidden={hideKeyboard}
-        flashKey={snap.lastMiss ? snap.target : null}
+        flashKey={keyFlash?.key ?? null}
+        flashKind={keyFlash?.kind ?? "miss"}
       />
 
       {showHands && <HandDiagram active={activeFinger} />}

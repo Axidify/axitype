@@ -18,6 +18,7 @@ export function PromptLine({ prompt, index, lastMiss }: PromptLineProps) {
   const [positions, setPositions] = useState<CharPosition[]>([]);
 
   const chars = useMemo(() => [...prompt], [prompt]);
+  const justHitIndex = !lastMiss && index > 0 ? index - 1 : -1;
 
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
@@ -70,8 +71,9 @@ export function PromptLine({ prompt, index, lastMiss }: PromptLineProps) {
           {chars.map((ch, i) => {
             const pos = positions[i];
             let className = styles.todo;
-            if (i < index) className = styles.done;
-            else if (i === index) {
+            if (i < index) {
+              className = i === justHitIndex ? `${styles.done} ${styles.justHit}` : styles.done;
+            } else if (i === index) {
               className = `${styles.caret} ${lastMiss ? styles.miss : ""}`;
             }
 
