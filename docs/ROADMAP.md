@@ -1,19 +1,24 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.6.1  
-**Status:** Released — Insights (local analytics tips + soft Focus/Daily length tuning).
+**Current version:** v1.7.0  
+**Status:** Released — paste-your-own practice.
 
 ---
 
-## Current focus (v1.7 — candidates)
+## Current focus (v1.8 — candidates)
 
-**Ship next (pick one):**
+**Ship next:**
 
-1. Custom text / paste-your-own practice
-2. PWA / offline install
+1. PWA / offline install
 
-**Just shipped (v1.6.1 — Insights):**
+**Just shipped (v1.7 — Paste practice):**
+
+- Hub → **Paste text** — paste or type your own prompt
+- Strips keys outside unlocked charset (with warning), 12-char min, 2000-char cap
+- Arena run with restart / Type again
+
+**Previously shipped (v1.6.1 — Insights):**
 
 - Stats → Insights (finish rate, drill sources, coaching tips from `axitype.analytics.v1`)
 - Soft Focus accuracy / Daily prompt length when restart rates climb
@@ -136,11 +141,11 @@ Daily challenge loop is live in **v1.6.0**: date-seeded prompt, `dailyBest` on p
 
 ## P1 — After daily lane
 
-### 2. Custom text / paste-your-own
+### 2. Custom text / paste-your-own ✅ shipped (v1.7.0)
 
 **Impact:** Medium · **Effort:** Medium
 
-Practice mode extension: paste text, filter to unlocked charset (or warn on unknown keys).
+Hub → **Paste text** modal; normalizes line breaks, strips keys outside your unlocked charset (with warning), caps at 2000 chars, then runs in the arena with restart.
 
 ### 3. Extend existing hub explainers (only if needed)
 
@@ -181,8 +186,7 @@ Not a new heavy tutorial — only if playtesting shows gaps after track explaine
 
 ## Suggested release slices
 
-### v1.7 — *(next)*
-- Custom / paste practice
+### v1.8 — *(next)*
 - PWA install
 - Further analytics-informed copy / gate tweaks
 
@@ -190,6 +194,7 @@ Not a new heavy tutorial — only if playtesting shows gaps after track explaine
 
 | Slice | Contents |
 |-------|----------|
+| **v1.7 Paste practice** | Hub paste modal, charset filter, arena restart |
 | **v1.6.1 Insights** | Stats Insights + soft Focus/Daily length tuning |
 | **v1.6 Daily lane** | Daily challenge + local best; restart analytics cleanup |
 | **v1.5 Stickiness** | Polish, stats depth, instrumentation, backup, Restart |
@@ -247,6 +252,6 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily** retention and **Insights** tuning is shipped through **v1.6.1**.
+AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily** retention, **Insights** tuning, and **paste practice** is shipped through **v1.7**.
 
-**Next:** deepen practice power (**paste text**) and distribution (**PWA**) — without bolting on streaks, XP, or accounts.
+**Next:** distribution (**PWA**) — without bolting on streaks, XP, or accounts.

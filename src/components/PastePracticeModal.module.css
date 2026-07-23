@@ -1,0 +1,109 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg-0) 75%, transparent);
+  backdrop-filter: blur(6px);
+  z-index: 20;
+  padding: 1rem;
+}
+
+.card {
+  width: min(520px, 100%);
+  padding: 1.35rem 1.25rem 1.15rem;
+  background: var(--bg-1);
+  border: 1px solid var(--lane);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.card h2 {
+  margin: 0.35rem 0 0.5rem;
+  font-size: 1.55rem;
+}
+
+.hint {
+  margin: 0 0 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.45;
+  font-size: 0.95rem;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--lane);
+  border-radius: 8px;
+  padding: 0.75rem 0.8rem;
+  font: inherit;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 9rem;
+  background: white;
+  color: var(--ink);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.warn,
+.error {
+  margin: 0.65rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.warn {
+  color: color-mix(in srgb, var(--accent) 70%, var(--ink));
+}
+
+.error {
+  color: color-mix(in srgb, #c0392b 80%, var(--ink));
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.primary,
+.secondary {
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 650;
+}
+
+.primary {
+  background: var(--accent);
+  color: white;
+}
+
+.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: white;
+  border: 1px solid var(--lane);
+  color: var(--ink);
+}

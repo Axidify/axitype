@@ -11,7 +11,7 @@ export interface KeyStat {
 
 export type KeyStatMap = Record<string, KeyStat>;
 
-export type SessionLevelId = number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
+export type SessionLevelId = number | "practice" | "paste" | "drill" | "gauntlet" | "focus" | "daily";
 
 export interface RoundHistoryEntry {
   at: number;

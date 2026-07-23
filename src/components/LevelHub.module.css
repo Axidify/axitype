@@ -33,6 +33,7 @@
 .primary,
 .secondary,
 .daily,
+.paste,
 .track,
 .trackOn,
 .node,
@@ -60,6 +61,15 @@
 .daily {
   border: 1px solid color-mix(in srgb, var(--finger-li) 45%, var(--lane));
   background: color-mix(in srgb, var(--finger-li) 12%, white);
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 650;
+}
+
+.paste {
+  border: 1px solid color-mix(in srgb, var(--finger-ri) 40%, var(--lane));
+  background: color-mix(in srgb, var(--finger-ri) 10%, white);
   color: var(--ink);
   padding: 0.75rem 1rem;
   border-radius: 8px;

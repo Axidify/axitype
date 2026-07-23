@@ -19,6 +19,7 @@ export function halfTrendDelta(values: number[]): number | null {
 export function roundShortLabel(entry: RoundHistoryEntry): string {
   if (typeof entry.levelId === "number") return `M${entry.levelId}`;
   if (entry.levelId === "practice") return "P";
+  if (entry.levelId === "paste") return "T";
   if (entry.levelId === "drill") return "D";
   if (entry.levelId === "gauntlet") return "G";
   if (entry.levelId === "focus") return "F";

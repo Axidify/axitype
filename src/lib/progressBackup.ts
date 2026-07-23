@@ -91,6 +91,7 @@ function normalizeRoundHistory(value: unknown): ProgressState["roundHistory"] {
     const validLevel =
       (typeof levelId === "number" && Number.isInteger(levelId)) ||
       levelId === "practice" ||
+      levelId === "paste" ||
       levelId === "drill" ||
       levelId === "gauntlet" ||
       levelId === "focus" ||
