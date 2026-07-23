@@ -217,7 +217,15 @@ export default function App() {
   const startFocusRound = (run: FocusRunState) => {
     const missCounts = aggregateMissCounts(progress, "recent12");
     const prompt = freshPrompt(
-      () => buildFocusPrompt(run.plan, run.phase, unlockedKeys, missCounts, progress.keyStats),
+      () =>
+        buildFocusPrompt(
+          run.plan,
+          run.phase,
+          unlockedKeys,
+          missCounts,
+          progress.keyStats,
+          run.speedTier,
+        ),
       lastPromptRef.current,
     );
     lastPromptRef.current = prompt;
