@@ -382,8 +382,9 @@ export function buildFocusPrompt(
   missCounts: Record<string, number>,
   stats?: KeyStatMap,
   speedTier = 1,
+  accuracyLength = ACCURACY_LENGTH,
 ): string {
-  const length = phase === "accuracy" ? ACCURACY_LENGTH : SPEED_LENGTH;
+  const length = phase === "accuracy" ? accuracyLength : SPEED_LENGTH;
   const finger = rehabFinger(plan.lockFinger ?? weakestTypingFinger(missCounts));
   const boost = plan.weakKey ?? primaryFocusKey(plan, missCounts);
   const complexity = focusPromptComplexity(phase, speedTier);

@@ -47,8 +47,10 @@ import {
 } from "../lib/storage";
 import {
   trackAnalytics,
+  loadAnalytics,
   type DrillStartSource,
 } from "../lib/analytics";
+import { summarizeAnalytics } from "../lib/analyticsInsights";
 import {
   parseProgressImport,
   progressExportFilename,
@@ -167,6 +169,8 @@ export default function App() {
     demoMode: progress.coachPrefs.demoMode,
   });
 
+  const playInsights = () => summarizeAnalytics(loadAnalytics());
+
   const nextRunId = () => {
     runIdRef.current += 1;
     return runIdRef.current;
@@ -226,7 +230,8 @@ export default function App() {
 
   const startDaily = () => {
     const dateKey = localDateKey();
-    const prompt = buildDailyPrompt(unlockedKeys, progress.keyStats, dateKey);
+    const length = playInsights().dailyPromptLength;
+    const prompt = buildDailyPrompt(unlockedKeys, progress.keyStats, dateKey, length);
     lastPromptRef.current = prompt;
     setDailySummary(null);
     setGauntletSummary(null);
@@ -270,6 +275,7 @@ export default function App() {
 
   const startFocusRound = (run: FocusRunState) => {
     const missCounts = aggregateMissCounts(progress, "recent12");
+    const accuracyLength = playInsights().focusAccuracyLength;
     const prompt = freshPrompt(
       () =>
         buildFocusPrompt(
@@ -279,6 +285,7 @@ export default function App() {
           missCounts,
           progress.keyStats,
           run.speedTier,
+          accuracyLength,
         ),
       lastPromptRef.current,
     );
