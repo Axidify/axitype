@@ -5,15 +5,17 @@ import {
   topMissedKeys,
 } from "../game/drills";
 import { accuracyGate, getLevel, type DrillKind, type Track } from "../game/levels";
+import { gauntletAccuracyForWave } from "../game/gauntlet";
 import { explainStars } from "../game/scoring";
 import type { EngineSnapshot } from "../game/engine";
+import type { GauntletBest } from "../lib/storage";
 import { LiveWpmChart } from "./charts/LiveWpmChart";
 import styles from "./Results.module.css";
 
 interface ResultsProps {
   title: string;
   snapshot: EngineSnapshot;
-  levelId: number | "practice" | "drill";
+  levelId: number | "practice" | "drill" | "gauntlet";
   drill?: DrillKind;
   track: Track;
   stars: number;
@@ -22,6 +24,13 @@ interface ResultsProps {
   demoMode?: boolean;
   unlockedLevel: number;
   keyEvents: { key: string; ms: number; hit: boolean }[];
+  gauntletSummary?: {
+    wavesCleared: number;
+    totalScore: number;
+    failedWave: number;
+    newBest: boolean;
+  } | null;
+  gauntletBest?: GauntletBest;
   onRetry: () => void;
   onNext: (levelId: number) => void;
   onHub: () => void;
@@ -46,6 +55,8 @@ export function Results({
   demoMode,
   unlockedLevel,
   keyEvents,
+  gauntletSummary = null,
+  gauntletBest,
   onRetry,
   onNext,
   onHub,
@@ -55,6 +66,7 @@ export function Results({
 }: ResultsProps) {
   const [showStarRules, setShowStarRules] = useState(false);
   const completed = snapshot.finished && !snapshot.timedOut;
+  const isGauntlet = levelId === "gauntlet" && gauntletSummary !== null;
   const level = typeof levelId === "number" ? getLevel(levelId) : null;
   const isMission = level !== null;
   const canAdvance = nextLevelId !== null;
@@ -83,6 +95,17 @@ export function Results({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onHub();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onHub]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.code !== "Space" && e.key !== " ") return;
       e.preventDefault();
       if (canAdvance) onNext(nextLevelId);
@@ -96,15 +119,28 @@ export function Results({
   const displayStars = breakdown?.stars ?? stars;
   const unlockedEnough = displayStars >= 2;
   const kicker =
-    !completed || snapshot.timedOut
-      ? "Round over"
-      : canReturnToMission && completed
-        ? "Drill done"
-        : unlockedEnough
-          ? "Lane cleared"
-          : "Round over";
+    isGauntlet
+      ? gauntletSummary.newBest
+        ? "New best run"
+        : "Gauntlet over"
+      : !completed || snapshot.timedOut
+        ? "Round over"
+        : canReturnToMission && completed
+          ? "Drill done"
+          : unlockedEnough
+            ? "Lane cleared"
+            : "Round over";
 
   const statusLine = (() => {
+    if (isGauntlet && gauntletSummary) {
+      const gate = gauntletAccuracyForWave(gauntletSummary.failedWave, track);
+      if (demoMode) return "Demo run — best not saved";
+      if (gauntletSummary.newBest) return "Personal best saved";
+      if (!completed || snapshot.timedOut) {
+        return `Wave ${gauntletSummary.failedWave} timed out — need ${gate}%+ accuracy to continue.`;
+      }
+      return `Wave ${gauntletSummary.failedWave} fell short — need ${gate}%+ accuracy to continue.`;
+    }
     if (demoMode) return "Demo run — progress not saved";
     if (unlockedNext) return "Next mission unlocked";
     if (snapshot.timedOut && levelId === "practice") {
@@ -118,24 +154,38 @@ export function Results({
   })();
 
   const statusTone =
-    (unlockedNext && !demoMode) || (canReturnToMission && completed)
+    (unlockedNext && !demoMode) ||
+    (canReturnToMission && completed) ||
+    (isGauntlet && gauntletSummary?.newBest)
       ? styles.statusGood
       : styles.statusHint;
 
   const gate = accuracyGate(track);
   const accuracyBelowGate = isMission && snapshot.accuracy < gate;
-  const showCoach = topMisses.length > 0 || Boolean(drillSuggestion);
+  const showCoach = !isGauntlet && (topMisses.length > 0 || Boolean(drillSuggestion));
 
   return (
     <section className={styles.wrap}>
       <header className={styles.hero}>
         <p className={styles.kicker}>{kicker}</p>
         <h1>{title}</h1>
-        <p className={styles.stars}>
-          {"★".repeat(displayStars)}
-          {"☆".repeat(Math.max(0, 3 - displayStars))}
-        </p>
+        {isGauntlet && gauntletSummary ? (
+          <p className={styles.gauntletHero}>
+            <strong>{gauntletSummary.wavesCleared}</strong> waves cleared ·{" "}
+            {gauntletSummary.totalScore.toLocaleString()} run score
+          </p>
+        ) : (
+          <p className={styles.stars}>
+            {"★".repeat(displayStars)}
+            {"☆".repeat(Math.max(0, 3 - displayStars))}
+          </p>
+        )}
         {statusLine && <p className={statusTone}>{statusLine}</p>}
+        {isGauntlet && gauntletBest && !demoMode && (
+          <p className={styles.gauntletBest}>
+            Best: {gauntletBest.wavesCleared} waves · {gauntletBest.totalScore.toLocaleString()} score
+          </p>
+        )}
       </header>
 
       <div className={styles.stats}>
@@ -185,7 +235,7 @@ export function Results({
         ) : (
           <>
             <button type="button" className={styles.primary} onClick={onRetry}>
-              Retry <span className={styles.kbd}>Space</span>
+              {isGauntlet ? "Run again" : "Retry"} <span className={styles.kbd}>Space</span>
             </button>
             <button type="button" className={styles.ghost} onClick={onHub}>
               Hub

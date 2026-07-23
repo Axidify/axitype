@@ -33,6 +33,14 @@
   font-weight: 650;
 }
 
+.gauntletScore {
+  justify-self: end;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
 .back,
 .peek {
   border: 1px solid var(--lane);

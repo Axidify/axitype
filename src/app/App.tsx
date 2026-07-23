@@ -4,6 +4,13 @@ import { LevelHub } from "../components/LevelHub";
 import { Results } from "../components/Results";
 import { Stats } from "../components/Stats";
 import { buildDrillPrompt, getDrill } from "../game/drills";
+import {
+  buildGauntletPrompt,
+  gauntletWavePassed,
+  getGauntletWave,
+  wavesClearedAfterRun,
+  type GauntletRunState,
+} from "../game/gauntlet";
 import { getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
 import { buildSessionPrompt, promptModeForLevel, promptModeForPractice } from "../game/prompts";
 import { calcStars } from "../game/scoring";
@@ -22,7 +29,7 @@ type View = "hub" | "arena" | "results" | "stats";
 interface Session {
   title: string;
   prompt: string;
-  levelId: number | "practice" | "drill";
+  levelId: number | "practice" | "drill" | "gauntlet";
   drill?: DrillKind;
   drillAfterLevel?: number;
   /** Mission to resume after a rehab drill launched from Results. */
@@ -30,8 +37,16 @@ interface Session {
   lockFinger?: FingerId;
   eyesUp?: boolean;
   timedSeconds?: number;
+  gauntletRun?: GauntletRunState;
   /** Bumps every start/retry so Arena remounts with a fresh run. */
   runId: number;
+}
+
+interface GauntletSummary {
+  wavesCleared: number;
+  totalScore: number;
+  failedWave: number;
+  newBest: boolean;
 }
 
 function freshPrompt(build: () => string, avoid: string | null): string {
@@ -53,6 +68,7 @@ export default function App() {
   const [lastResult, setLastResult] = useState<ArenaResult | null>(null);
   const [lastStars, setLastStars] = useState(0);
   const [unlockedNext, setUnlockedNext] = useState(false);
+  const [gauntletSummary, setGauntletSummary] = useState<GauntletSummary | null>(null);
   const runIdRef = useRef(0);
   const lastPromptRef = useRef<string | null>(null);
 
@@ -133,6 +149,146 @@ export default function App() {
     setView("arena");
   };
 
+  const startGauntletWave = (wave: number, totalScore: number) => {
+    const demo = progress.coachPrefs.demoMode;
+    const config = getGauntletWave(wave, progress.unlockedLevel, demo);
+    const prompt = freshPrompt(
+      () => buildGauntletPrompt(wave, progress.unlockedLevel, progress.keyStats, demo),
+      lastPromptRef.current,
+    );
+    lastPromptRef.current = prompt;
+    setGauntletSummary(null);
+    setSession({
+      title: `Gauntlet · Wave ${wave}`,
+      prompt,
+      levelId: "gauntlet",
+      gauntletRun: { wave, totalScore },
+      eyesUp: Boolean(config.eyesUp && progress.track === "retrain"),
+      timedSeconds: config.timedSeconds,
+      runId: nextRunId(),
+    });
+    setView("arena");
+  };
+
+  const startGauntlet = () => {
+    startGauntletWave(1, 0);
+  };
+
+  const recordRoundProgress = (
+    levelId: Session["levelId"],
+    snapshot: ArenaResult["snapshot"],
+    keyEvents: ArenaResult["keyEvents"],
+    drill?: DrillKind,
+    gauntletWave?: number,
+  ) => {
+    if (progress.coachPrefs.demoMode) return;
+
+    setProgress((p) => {
+      const next: ProgressState = {
+        ...p,
+        keyStats: { ...p.keyStats },
+        missCounts: { ...p.missCounts },
+        levelStars: { ...p.levelStars },
+        bestByLevel: { ...p.bestByLevel },
+        formBadges: { ...p.formBadges },
+      };
+
+      const roundMisses: Record<string, number> = {};
+      for (const ev of keyEvents) {
+        next.keyStats = updateKeyStat(next.keyStats, ev.key, ev.hit, ev.ms);
+        if (!ev.hit) {
+          next.missCounts[ev.key] = (next.missCounts[ev.key] ?? 0) + 1;
+          roundMisses[ev.key] = (roundMisses[ev.key] ?? 0) + 1;
+        }
+      }
+
+      if (typeof levelId === "number") {
+        const level = getLevel(levelId);
+        const stars = calcStars(
+          snapshot.finished && !snapshot.timedOut,
+          snapshot.accuracy,
+          snapshot.wpm,
+          level,
+          p.track,
+          snapshot.peeked,
+        );
+        next.levelStars[levelId] = Math.max(next.levelStars[levelId] ?? 0, stars);
+        const best = next.bestByLevel[levelId];
+        if (!best || snapshot.score > best.score) {
+          next.bestByLevel[levelId] = {
+            score: snapshot.score,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+          };
+        }
+        if (stars >= 2 && levelId >= p.unlockedLevel && levelId < 12) {
+          next.unlockedLevel = levelId + 1;
+        }
+        if (level.id >= 5) {
+          next.coachPrefs = { ...next.coachPrefs, skipHomeAfter5: true };
+        }
+
+        next.roundHistory = [
+          ...next.roundHistory,
+          {
+            at: Date.now(),
+            levelId,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+            score: snapshot.score,
+            stars,
+            missCounts: roundMisses,
+          },
+        ].slice(-40);
+      } else if (levelId === "drill" && drill) {
+        const after = session?.drillAfterLevel ?? 1;
+        next.formBadges[formBadgeKey(after, drill)] = true;
+        next.roundHistory = [
+          ...next.roundHistory,
+          {
+            at: Date.now(),
+            levelId,
+            drill,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+            score: snapshot.score,
+            stars: snapshot.finished && !snapshot.timedOut ? 1 : 0,
+            missCounts: roundMisses,
+          },
+        ].slice(-40);
+      } else if (levelId === "gauntlet") {
+        next.roundHistory = [
+          ...next.roundHistory,
+          {
+            at: Date.now(),
+            levelId,
+            gauntletWave,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+            score: snapshot.score,
+            stars: 0,
+            missCounts: roundMisses,
+          },
+        ].slice(-40);
+      } else {
+        next.roundHistory = [
+          ...next.roundHistory,
+          {
+            at: Date.now(),
+            levelId,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+            score: snapshot.score,
+            stars: 0,
+            missCounts: roundMisses,
+          },
+        ].slice(-40);
+      }
+
+      return next;
+    });
+  };
+
   const startDrill = (
     kind: DrillKind,
     afterLevel: number,
@@ -167,6 +323,51 @@ export default function App() {
     const { snapshot, levelId, drill, keyEvents } = result;
     const completed = snapshot.finished && !snapshot.timedOut;
 
+    if (levelId === "gauntlet" && session?.gauntletRun) {
+      const { wave, totalScore } = session.gauntletRun;
+      const demo = progress.coachPrefs.demoMode;
+      const passed = gauntletWavePassed(
+        completed,
+        snapshot.accuracy,
+        wave,
+        progress.track,
+      );
+      const runScore = totalScore + snapshot.score;
+
+      recordRoundProgress(levelId, snapshot, keyEvents, undefined, wave);
+
+      if (passed) {
+        startGauntletWave(wave + 1, runScore);
+        return;
+      }
+
+      const cleared = wavesClearedAfterRun(wave, false);
+      let newBest = false;
+
+      if (!demo) {
+        const prev = progress.gauntletBest;
+        newBest = !prev || cleared > prev.wavesCleared || (cleared === prev.wavesCleared && runScore > prev.totalScore);
+        if (newBest) {
+          setProgress((p) => ({
+            ...p,
+            gauntletBest: { wavesCleared: cleared, totalScore: runScore, at: Date.now() },
+          }));
+        }
+      }
+
+      setLastStars(0);
+      setUnlockedNext(false);
+      setGauntletSummary({
+        wavesCleared: cleared,
+        totalScore: runScore,
+        failedWave: wave,
+        newBest,
+      });
+      setLastResult(result);
+      setView("results");
+      return;
+    }
+
     let stars = 0;
     let unlocked = false;
 
@@ -196,61 +397,7 @@ export default function App() {
       return;
     }
 
-    setProgress((p) => {
-      const next: ProgressState = {
-        ...p,
-        keyStats: { ...p.keyStats },
-        missCounts: { ...p.missCounts },
-        levelStars: { ...p.levelStars },
-        bestByLevel: { ...p.bestByLevel },
-        formBadges: { ...p.formBadges },
-      };
-
-      const roundMisses: Record<string, number> = {};
-      for (const ev of keyEvents) {
-        next.keyStats = updateKeyStat(next.keyStats, ev.key, ev.hit, ev.ms);
-        if (!ev.hit) {
-          next.missCounts[ev.key] = (next.missCounts[ev.key] ?? 0) + 1;
-          roundMisses[ev.key] = (roundMisses[ev.key] ?? 0) + 1;
-        }
-      }
-
-      if (typeof levelId === "number") {
-        const level = getLevel(levelId);
-        next.levelStars[levelId] = Math.max(next.levelStars[levelId] ?? 0, stars);
-        const best = next.bestByLevel[levelId];
-        if (!best || snapshot.score > best.score) {
-          next.bestByLevel[levelId] = {
-            score: snapshot.score,
-            wpm: snapshot.wpm,
-            accuracy: snapshot.accuracy,
-          };
-        }
-        if (unlocked) next.unlockedLevel = levelId + 1;
-        if (level.id >= 5) {
-          next.coachPrefs = { ...next.coachPrefs, skipHomeAfter5: true };
-        }
-      } else if (levelId === "drill" && drill) {
-        const after = session?.drillAfterLevel ?? 1;
-        next.formBadges[formBadgeKey(after, drill)] = true;
-      }
-
-      next.roundHistory = [
-        ...next.roundHistory,
-        {
-          at: Date.now(),
-          levelId,
-          drill,
-          wpm: snapshot.wpm,
-          accuracy: snapshot.accuracy,
-          score: snapshot.score,
-          stars,
-          missCounts: roundMisses,
-        },
-      ].slice(-40);
-
-      return next;
-    });
+    recordRoundProgress(levelId, snapshot, keyEvents, drill);
 
     setView("results");
   };
@@ -282,6 +429,7 @@ export default function App() {
           }
           onPlayLevel={startLevel}
           onPractice={startPractice}
+          onGauntlet={startGauntlet}
           onStats={() => setView("stats")}
           onDrill={startDrill}
           onToggleFormCoach={() =>
@@ -328,6 +476,8 @@ export default function App() {
           lockFinger={session.lockFinger}
           eyesUp={session.eyesUp}
           timedSeconds={session.timedSeconds}
+          gauntletWave={session.gauntletRun?.wave}
+          gauntletScore={session.gauntletRun?.totalScore}
           demoMode={progress.coachPrefs.demoMode}
           onFinished={applyResult}
           onExit={() => setView("hub")}
@@ -348,7 +498,8 @@ export default function App() {
           unlockedLevel={progress.unlockedLevel}
           keyEvents={lastResult.keyEvents}
           onRetry={() => {
-            if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
+            if (lastResult.levelId === "gauntlet") startGauntlet();
+            else if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
             else if (lastResult.drill && session?.drillAfterLevel)
               startDrill(
                 lastResult.drill,
@@ -360,6 +511,8 @@ export default function App() {
           }}
           onNext={startLevel}
           onHub={() => setView("hub")}
+          gauntletSummary={gauntletSummary}
+          gauntletBest={progress.gauntletBest}
           returnToLevelId={
             lastResult.levelId === "drill" ? session?.returnToLevelId ?? null : null
           }
