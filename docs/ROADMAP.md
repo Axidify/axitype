@@ -288,8 +288,6 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily**, **Insights**, and **paste practice** is shipped through **v1.7**.
-
 AxiType’s core story plus **Daily**, **Insights**, **paste practice**, and **local profiles** is shipped through **v1.8**.
 
 **Next:** milestone surfacing in Results/Hub or Insights polish. **Not next:** PWA, achievement catalogs, streaks, or collection walls. Cloud accounts can sync the same `axitype.profile` bundle later.
