@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultProgress } from "./storage";
 import {
+  parseBackupImport,
   parseProgressImport,
   serializeProgressExport,
 } from "./progressBackup";
@@ -39,17 +40,36 @@ describe("progressBackup", () => {
     ).toBe(false);
   });
 
-  it("clamps unlocked level and merges coach prefs", () => {
-    const result = parseProgressImport(
-      JSON.stringify({
-        unlockedLevel: 99,
-        coachPrefs: { sound: false },
-      }),
-    );
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.progress.unlockedLevel).toBe(12);
-    expect(result.progress.coachPrefs.sound).toBe(false);
-    expect(result.progress.coachPrefs.formCoach).toBe(true);
+  it("imports profile bundles and full stores", () => {
+    const profile = {
+      id: "abc",
+      name: "Alex",
+      createdAt: 1,
+      updatedAt: 2,
+      progress: { ...defaultProgress(), unlockedLevel: 7 },
+      analytics: [],
+    };
+    const profileRaw = JSON.stringify({
+      schema: "axitype.profile",
+      version: 1,
+      exportedAt: 3,
+      profile,
+    });
+    const profileResult = parseBackupImport(profileRaw);
+    expect(profileResult.ok).toBe(true);
+    if (!profileResult.ok || profileResult.mode !== "profile") return;
+    expect(profileResult.progress.unlockedLevel).toBe(7);
+    expect(profileResult.name).toBe("Alex");
+
+    const storeRaw = JSON.stringify({
+      schema: "axitype.profiles",
+      version: 1,
+      activeProfileId: "abc",
+      profiles: [profile],
+    });
+    const storeResult = parseBackupImport(storeRaw);
+    expect(storeResult.ok).toBe(true);
+    if (!storeResult.ok || storeResult.mode !== "store") return;
+    expect(storeResult.store.profiles[0]?.progress.unlockedLevel).toBe(7);
   });
 });

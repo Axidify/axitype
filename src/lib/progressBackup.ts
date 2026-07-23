@@ -1,4 +1,14 @@
 import type { DrillKind, Track } from "../game/levels";
+import type { AnalyticsEvent } from "./analytics";
+import {
+  normalizeProfileRecord,
+  normalizeProfileStore,
+  PROFILE_BUNDLE_SCHEMA,
+  PROFILE_BUNDLE_VERSION,
+  PROFILES_SCHEMA,
+  type ProfileRecord,
+  type ProfileStore,
+} from "./profiles";
 import { defaultProgress, type ProgressState } from "./storage";
 
 export const PROGRESS_EXPORT_SCHEMA = "axitype.progress";
@@ -11,8 +21,35 @@ export interface ProgressExportFile {
   progress: ProgressState;
 }
 
+/** Cloud-ready sync unit: one named profile (progress + analytics). */
+export interface ProfileExportFile {
+  schema: typeof PROFILE_BUNDLE_SCHEMA;
+  version: number;
+  exportedAt: number;
+  profile: {
+    id: string;
+    name: string;
+    createdAt: number;
+    updatedAt: number;
+    progress: ProgressState;
+    analytics: AnalyticsEvent[];
+  };
+}
+
 export type ProgressImportResult =
   | { ok: true; progress: ProgressState }
+  | { ok: false; error: string };
+
+export type BackupImportResult =
+  | { ok: true; mode: "progress"; progress: ProgressState }
+  | {
+      ok: true;
+      mode: "profile";
+      name: string;
+      progress: ProgressState;
+      analytics: AnalyticsEvent[];
+    }
+  | { ok: true; mode: "store"; store: ProfileStore }
   | { ok: false; error: string };
 
 const TRACKS = new Set<Track>(["learn", "retrain"]);
@@ -197,6 +234,37 @@ export function serializeProgressExport(progress: ProgressState, exportedAt = Da
 }
 
 export function parseProgressImport(raw: string): ProgressImportResult {
+  const backup = parseBackupImport(raw);
+  if (!backup.ok) return backup;
+  if (backup.mode === "progress") return { ok: true, progress: backup.progress };
+  if (backup.mode === "profile") return { ok: true, progress: backup.progress };
+  return { ok: true, progress: backup.store.profiles[0]?.progress ?? defaultProgress() };
+}
+
+export function buildProfileExport(
+  profile: ProfileRecord,
+  exportedAt = Date.now(),
+): ProfileExportFile {
+  return {
+    schema: PROFILE_BUNDLE_SCHEMA,
+    version: PROFILE_BUNDLE_VERSION,
+    exportedAt,
+    profile: {
+      id: profile.id,
+      name: profile.name,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+      progress: profile.progress,
+      analytics: profile.analytics,
+    },
+  };
+}
+
+export function serializeProfileExport(profile: ProfileRecord, exportedAt = Date.now()): string {
+  return `${JSON.stringify(buildProfileExport(profile, exportedAt), null, 2)}\n`;
+}
+
+export function parseBackupImport(raw: string): BackupImportResult {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -204,7 +272,30 @@ export function parseProgressImport(raw: string): ProgressImportResult {
     return { ok: false, error: "That file isn't valid JSON." };
   }
 
-  // Accept wrapped export or a bare progress object (legacy paste).
+  if (isRecord(parsed) && parsed.schema === PROFILES_SCHEMA) {
+    const store = normalizeProfileStore(parsed);
+    if (!store) return { ok: false, error: "Couldn't read the profile store from that file." };
+    return { ok: true, mode: "store", store };
+  }
+
+  if (isRecord(parsed) && parsed.schema === PROFILE_BUNDLE_SCHEMA) {
+    const version = asNumber(parsed.version, 0);
+    if (version < 1 || version > PROFILE_BUNDLE_VERSION) {
+      return { ok: false, error: `Unsupported profile backup version (${version}).` };
+    }
+    const record = normalizeProfileRecord(parsed.profile);
+    if (!record) return { ok: false, error: "Couldn't read profile data from that file." };
+    const progress = normalizeProgress(record.progress);
+    if (!progress) return { ok: false, error: "Couldn't read progress data from that file." };
+    return {
+      ok: true,
+      mode: "profile",
+      name: record.name,
+      progress,
+      analytics: record.analytics,
+    };
+  }
+
   let progressRaw: unknown = parsed;
   if (isRecord(parsed) && parsed.schema === PROGRESS_EXPORT_SCHEMA) {
     const version = asNumber(parsed.version, 0);
@@ -218,7 +309,7 @@ export function parseProgressImport(raw: string): ProgressImportResult {
   if (!progress) {
     return { ok: false, error: "Couldn't read progress data from that file." };
   }
-  return { ok: true, progress };
+  return { ok: true, mode: "progress", progress };
 }
 
 export function progressExportFilename(exportedAt = Date.now()): string {
@@ -229,4 +320,15 @@ export function progressExportFilename(exportedAt = Date.now()): string {
     String(d.getDate()).padStart(2, "0"),
   ].join("-");
   return `axitype-progress-${stamp}.json`;
+}
+
+export function profileExportFilename(name: string, exportedAt = Date.now()): string {
+  const safe = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "profile";
+  const d = new Date(exportedAt);
+  const stamp = [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+  return `axitype-profile-${safe}-${stamp}.json`;
 }

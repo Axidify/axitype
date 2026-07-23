@@ -1,5 +1,11 @@
 import type { DrillKind, Track } from "../game/levels";
 import type { DailyBest } from "../game/daily";
+import {
+  getActiveProgress,
+  loadProfileStoreFromLocalStorage,
+  saveProfileStoreToLocalStorage,
+  setActiveProgress,
+} from "./profiles";
 
 export type { DailyBest };
 
@@ -80,7 +86,19 @@ export function defaultProgress(): ProgressState {
   };
 }
 
+/** Active profile progress (migrates legacy `axitype.v1` on first load). */
 export function loadProgress(): ProgressState {
+  return getActiveProgress(loadProfileStoreFromLocalStorage());
+}
+
+/** Writes progress into the active profile in `axitype.profiles.v1`. */
+export function saveProgress(state: ProgressState): void {
+  const store = loadProfileStoreFromLocalStorage();
+  saveProfileStoreToLocalStorage(setActiveProgress(store, state));
+}
+
+/** @deprecated Prefer profile store; kept for tests that poke legacy keys. */
+export function loadLegacyProgressBlob(): ProgressState {
   try {
     let raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -89,14 +107,14 @@ export function loadProgress(): ProgressState {
     }
     if (!raw) return defaultProgress();
     const parsed = JSON.parse(raw) as Partial<ProgressState>;
-    return { ...defaultProgress(), ...parsed, coachPrefs: { ...defaultProgress().coachPrefs, ...parsed.coachPrefs } };
+    return {
+      ...defaultProgress(),
+      ...parsed,
+      coachPrefs: { ...defaultProgress().coachPrefs, ...parsed.coachPrefs },
+    };
   } catch {
     return defaultProgress();
   }
-}
-
-export function saveProgress(state: ProgressState): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 export function updateKeyStat(

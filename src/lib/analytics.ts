@@ -1,4 +1,10 @@
 import type { DrillKind, Track } from "../game/levels";
+import {
+  getActiveAnalytics,
+  loadProfileStoreFromLocalStorage,
+  saveProfileStoreToLocalStorage,
+  setActiveAnalytics,
+} from "./profiles";
 
 export const ANALYTICS_KEY = "axitype.analytics.v1";
 export const ANALYTICS_MAX_EVENTS = 200;
@@ -68,32 +74,29 @@ export function appendAnalyticsEvent(
   return merged.length > max ? merged.slice(merged.length - max) : merged;
 }
 
+/** Active profile analytics (lives inside `axitype.profiles.v1`). */
 export function loadAnalytics(): AnalyticsEvent[] {
-  try {
-    const raw = localStorage.getItem(ANALYTICS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? (parsed as AnalyticsEvent[]) : [];
-  } catch {
-    return [];
-  }
+  return getActiveAnalytics(loadProfileStoreFromLocalStorage());
 }
 
 export function saveAnalytics(events: AnalyticsEvent[]): void {
-  localStorage.setItem(ANALYTICS_KEY, JSON.stringify(events));
+  const store = loadProfileStoreFromLocalStorage();
+  saveProfileStoreToLocalStorage(setActiveAnalytics(store, events));
 }
 
 export function trackAnalytics(input: AnalyticsEventInput): void {
   try {
-    const next = appendAnalyticsEvent(loadAnalytics(), input);
-    saveAnalytics(next);
+    const store = loadProfileStoreFromLocalStorage();
+    const next = appendAnalyticsEvent(getActiveAnalytics(store), input);
+    saveProfileStoreToLocalStorage(setActiveAnalytics(store, next));
   } catch {
     // Ignore quota / private-mode failures — progress save is primary.
   }
 }
 
 export function clearAnalytics(): void {
-  localStorage.removeItem(ANALYTICS_KEY);
+  const store = loadProfileStoreFromLocalStorage();
+  saveProfileStoreToLocalStorage(setActiveAnalytics(store, []));
 }
 
 export function countAnalytics(

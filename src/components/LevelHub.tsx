@@ -9,14 +9,22 @@ import {
   type DrillKind,
   type Track,
 } from "../game/levels";
+import type { ProfileRecord } from "../lib/profiles";
 import { formBadgeKey, type ProgressState } from "../lib/storage";
-import { RetrainIntro } from "./RetrainIntro";
 import { PastePracticeModal } from "./PastePracticeModal";
+import { ProfileSwitcher } from "./ProfileSwitcher";
+import { RetrainIntro } from "./RetrainIntro";
 import styles from "./LevelHub.module.css";
 
 interface LevelHubProps {
   progress: ProgressState;
   unlockedKeys: string;
+  profiles: ProfileRecord[];
+  activeProfileId: string;
+  onSwitchProfile: (profileId: string) => void;
+  onCreateProfile: (name: string) => { ok: true } | { ok: false; error: string };
+  onRenameProfile: (profileId: string, name: string) => { ok: true } | { ok: false; error: string };
+  onDeleteProfile: (profileId: string) => { ok: true } | { ok: false; error: string };
   onTrack: (track: Track) => void;
   onPlayLevel: (id: number) => void;
   onPractice: (timedSeconds?: number) => void;
@@ -49,6 +57,12 @@ function drillGateFor(levelId: number): { kind: DrillKind; afterLevel: number; t
 export function LevelHub({
   progress,
   unlockedKeys,
+  profiles,
+  activeProfileId,
+  onSwitchProfile,
+  onCreateProfile,
+  onRenameProfile,
+  onDeleteProfile,
   onTrack,
   onPlayLevel,
   onPractice,
@@ -104,6 +118,14 @@ export function LevelHub({
       <header className={styles.hero}>
         <p className={styles.brand}>AxiType</p>
         <p className={styles.tag}>Train touch typing. Chase the combo.</p>
+        <ProfileSwitcher
+          profiles={profiles}
+          activeProfileId={activeProfileId}
+          onSwitch={onSwitchProfile}
+          onCreate={onCreateProfile}
+          onRename={onRenameProfile}
+          onDelete={onDeleteProfile}
+        />
         <div className={styles.actions}>
           <button type="button" className={styles.primary} onClick={() => onPlayLevel(continueId)}>
             Continue · Mission {continueId}

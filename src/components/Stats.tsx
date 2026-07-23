@@ -229,8 +229,9 @@ export function Stats({
       <h2>Backup</h2>
       <div className={styles.backup}>
         <p className={styles.backupNote}>
-          Download your progress as JSON, or restore from a backup on another device. Import replaces
-          the save on this browser.
+          Download this profile (progress + insights data) as JSON, or restore a backup. Import
+          replaces the <strong>active profile</strong> on this browser (or the whole device store if
+          the file is a multi-profile backup).
         </p>
         <div className={styles.backupActions}>
           <button

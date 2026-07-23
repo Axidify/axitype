@@ -1,18 +1,28 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.7.0  
-**Status:** Released — paste-your-own practice.
+**Current version:** v1.8.0  
+**Status:** Released — local profiles (cloud-ready shape).
 
 ---
 
-## Current focus (v1.8 — candidates)
+## Current focus (v1.9 — candidates)
 
-**Ship next:**
+**Ship next (pick one):**
 
-1. PWA / offline install
+1. Hub / Results milestone surfacing (Form badges, Daily, Gauntlet PB — no trophy catalog)
+2. Further analytics-informed copy / gate tweaks
 
-**Just shipped (v1.7 — Paste practice):**
+**Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
+
+**Just shipped (v1.8 — Local profiles):**
+
+- Hub profile switcher — create / rename / switch / delete (max 5)
+- Store `axitype.profiles.v1` with UUID ids; per-profile progress + analytics
+- Migrate legacy `axitype.v1` → profile “Player”
+- Export/import `axitype.profile` bundles (cloud sync unit)
+
+**Previously shipped (v1.7 — Paste practice):**
 
 - Hub → **Paste text** — paste or type your own prompt
 - Strips keys outside unlocked charset (with warning), 12-char min, 2000-char cap
@@ -27,7 +37,6 @@
 
 - Daily challenge — date-seeded prompt, local best, hub entry, results callout
 - Restart / `dailyPlayed` / `roundRestarted` analytics
-- Roadmap + README synced to post–v1.5 reality
 
 **Previously shipped (v1.5 — Stickiness):**
 
@@ -47,7 +56,7 @@
 | v1.2 | Clarity, hybrid prompts, Retrain onboarding, timed practice, miss coaching |
 | v1.1 | Wider layout + labeled WPM chart |
 
-**Defer:** Accounts, leaderboards, achievements / streaks, new missions beyond 12, full Keybr analytics parity.
+**Defer:** PWA / offline install, cloud accounts, leaderboards, achievement catalogs / streak counters / collection walls, new missions beyond 12, full Keybr analytics parity.
 
 ---
 
@@ -64,21 +73,22 @@ AxiType is a browser-based touch typing tutor with:
 - **Live WPM sparkline**, combo scoring, pace gating (Retrain)
 - **Timed sprints** (60s / 90s), **demo mode**, **Escape → hub** from arena / results / stats
 - **Drills** — Form badges on Retrain; return-to-mission after rehab from Results; suggested from Results / Stats
-- **Stats** — time windows, miss heatmap, WPM + accuracy trends, best-by-mission, backup
+- **Daily challenge** + **paste-your-own practice**
+- **Stats** — time windows, miss heatmap, WPM + accuracy trends, best-by-mission, Insights, backup
 - **Local progress** — `axitype.v1` + optional `axitype.analytics.v1`
 
 **Core differentiator:** Retrain + Focus are not “hard mode.” They are structured paths for breaking bad habits — mandatory drills, stronger coaching, pace gates, Eyes Up, and weakness-targeted rehab.
 
 **Positioning:** Stronger than most apps at habit rehab and form coaching; behind Keybr on per-key analytics depth and behind Monkeytype on speed-test variety / social features. Compete on Retrain / Focus, not breadth.
 
-**Main gaps vs mature typing apps:** daily/recurring reason to return, custom/paste practice, PWA install, accounts/leaderboards (intentionally deferred).
+**Main gaps vs mature typing apps:** optional shared-device profiles; PWA install (deferred); accounts/leaderboards (intentionally deferred).
 
 **Progression scope:**
 
 - **Missions** — star ratings and `unlockedLevel` (Learn: accuracy gate; Retrain: accuracy gate + drill badges between stages)
-- **Practice / sprints** — no stars; unlocked key charset; Restart in arena for timed sprints only among practice modes
+- **Practice / sprints / paste** — no stars; unlocked key charset; Restart where supported
 - **Drills** — Form badges on Retrain; suggested from Results / Stats
-- **Focus / Gauntlet** — separate loops with their own pass rules and bests; Restart mid-run
+- **Focus / Gauntlet / Daily** — separate loops with their own pass rules and bests
 
 ---
 
@@ -106,6 +116,9 @@ AxiType is a browser-based touch typing tutor with:
 | Local instrumentation | **v1.5** | `src/lib/analytics.ts` |
 | Progress export / import | **v1.5** | `src/lib/progressBackup.ts` |
 | Challenge Restart (sprints / Gauntlet / Focus) | **v1.5** | Not campaign missions |
+| Daily challenge | **v1.6** | Local best per day |
+| Instrumentation-backed Insights | **v1.6.1** | Soft Focus/Daily length tuning |
+| Paste-your-own practice | **v1.7** | Charset filter + arena restart |
 
 ---
 
@@ -116,9 +129,9 @@ AxiType is a browser-based touch typing tutor with:
 3. **Pedagogy before features** — readable drills beat random letter chains; see [hybrid-prompt-text.md](./plans/hybrid-prompt-text.md).
 4. **Small, shippable slices** — each item below should be releasable on its own.
 5. **Keep the codebase lean** — resist platform creep until the core loop is undeniable.
-6. **Retention without bloat** — prefer daily challenge / useful practice over achievements, streaks, and XP walls.
+6. **Retention without bloat** — prefer Daily / useful practice / Form badges over achievement catalogs, streak counters, and XP walls.
 
-**`coachPrefs` pattern:** New one-time flags merge via the same `loadProgress()` spread — don’t break saved games. Backup schema is `axitype.progress` v1 (`progressBackup.ts`). Extend that merge when adding `dailyBest`.
+**`coachPrefs` pattern:** New one-time flags merge via the same `loadProgress()` spread — don’t break saved games. Backup schema is `axitype.progress` v1 (`progressBackup.ts`). Bump export version when the save shape changes (profiles, habit fields, etc.).
 
 ---
 
@@ -126,58 +139,75 @@ AxiType is a browser-based touch typing tutor with:
 
 | Tier | Meaning | Target |
 |------|---------|--------|
-| **P0** | Highest ROI for the next release | v1.6 |
-| **P1** | Core product bets after daily lane | Next 1–2 months |
-| **P2** | Polish / retention follow-ons | When P0/P1 stable |
-| **P3** | Strategic / audience-demand | Later |
+| **P0** | Highest ROI for the next release | v1.8 candidates below |
+| **P1** | Core follow-ons | Hub polish, analytics copy |
+| **P2** | Nice polish | E2E, Focus/Gauntlet UX, PWA |
+| **P3** | Demand-gated / strategic | Cloud later |
 
 ---
 
-## P0 — v1.6 Daily challenge ✅ shipped
+## P0 — v1.8 candidates
 
-Daily challenge loop is live in **v1.6.0**: date-seeded prompt, `dailyBest` on progress (merged in backup), hub entry, results best callout, `dailyPlayed` + `roundRestarted` analytics.
+### Thin local profiles ✅ shipped (v1.8.0)
 
----
+**Impact:** Medium (shared devices) · **Effort:** Medium  
+**When:** Shared-machine demand — **not** bundled with achievements.
 
-## P1 — After daily lane
+**Shipped shape:**
 
-### 2. Custom text / paste-your-own ✅ shipped (v1.7.0)
+- Store `axitype.profiles.v1` — `{ activeProfileId, profiles[] }` with stable UUID ids
+- Each profile holds `progress` + `analytics` (cloud sync unit)
+- One-time migrate `axitype.v1` (+ legacy analytics) → profile “Player”
+- Hub: create / rename / switch / delete (max 5; keep ≥1)
+- Export active profile as `axitype.profile` v1; import replaces active (or full store)
+- **Cloud later** = auth + sync the same profile bundle — no second format
 
-**Impact:** Medium · **Effort:** Medium
+**Do not** ship an achievement catalog in the same release as profiles.
 
-Hub → **Paste text** modal; normalizes line breaks, strips keys outside your unlocked charset (with warning), caps at 2000 chars, then runs in the arena with restart.
-
-### 3. Extend existing hub explainers (only if needed)
+### Hub / Results milestone surfacing
 
 **Impact:** Medium · **Effort:** Low
 
-Not a new heavy tutorial — only if playtesting shows gaps after track explainer + RetrainIntro: tighten Learn/Retrain → ★★ unlock → Stats/Focus copy.
+Not a trophy system — surface milestones players already earn (Form badges, Focus unlock, Gauntlet PB, Daily best) more clearly in Results / Hub when playtesting shows gaps.
 
-### 4. Instrumentation-backed tuning ✅ shipped (v1.6.1)
+### Analytics-informed copy / gate tweaks
 
-**Impact:** Medium · **Effort:** Low–medium
+**Impact:** Medium · **Effort:** Low
 
-`summarizeAnalytics` → Stats Insights (finish rate, drill sources, tips) + soft length overrides for Focus accuracy / Daily prompts when restart rates climb. Further gate/copy tweaks still open once more play data exists.
+Insights + soft length tuning shipped in v1.6.1. Further gate/copy changes only when local play data justifies them.
 
 ---
 
-## P2 — Nice polish
+## P1 / P2 — Polish
 
 | Item | Notes |
 |------|--------|
-| PWA / offline install | Vite PWA plugin; already fully client-side |
 | More Focus/Gauntlet UX polish | From playtesting |
 | E2E smoke (Playwright) | start → type → results per track |
+| PWA / offline install | Deferred — revisit when distribution matters |
 
 ---
 
-## P3 — Strategic bets (later)
+## P3 — Achievements deferred + strategic
+
+### Achievements / streaks / collection — deferred
+
+Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form badges (already gate Retrain), Daily messaging (“without streaks or XP”), and current data (`dailyBest` is today-only; `roundHistory` capped at 40 — streaks need new durable fields).
+
+| Want | Better AxiType move |
+|------|---------------------|
+| Milestone feel | Celebrate existing Form badges / unlocks / Daily / Gauntlet PB in Results/Hub |
+| Skill badges | Keep Form badges as the skill system — don’t duplicate |
+| Streaks | Only if Daily return stalls; add durable habit fields, not a trophy wall |
+| Collection wall | Defer — highest theater / lowest coaching ROI |
+| Cloud accounts | After local profiles prove needed; backup JSON remains the portability path |
+
+### Other P3
 
 | Item | Impact | Effort | Notes |
 |------|--------|--------|-------|
-| Accounts + cloud sync | High (if scaling) | High | Backup JSON is enough until demand |
+| Accounts + cloud sync | High (if scaling) | High | After thin local profiles; same bundle |
 | Leaderboards | Medium | High | Need audience; daily local best is cheaper |
-| Achievements / streaks | Low–medium | Medium | Defer — retention theater |
 | Multiplayer / races | Medium | High | Different product direction |
 | Mobile soft keyboard | Low | High | Desktop-first touch typing |
 | Missions beyond 12 | Low now | Medium | Deepen existing loop first |
@@ -186,14 +216,18 @@ Not a new heavy tutorial — only if playtesting shows gaps after track explaine
 
 ## Suggested release slices
 
-### v1.8 — *(next)*
-- PWA install
-- Further analytics-informed copy / gate tweaks
+### v1.9 — *(next)*
+- Hub/Results milestone surfacing
+- Insights-driven copy / gate tweaks
+
+### Later
+- PWA / offline install (when distribution matters)
 
 ### Shipped
 
 | Slice | Contents |
 |-------|----------|
+| **v1.8 Local profiles** | UUID store, per-profile analytics, hub switcher, profile export |
 | **v1.7 Paste practice** | Hub paste modal, charset filter, arena restart |
 | **v1.6.1 Insights** | Stats Insights + soft Focus/Daily length tuning |
 | **v1.6 Daily lane** | Daily challenge + local best; restart analytics cleanup |
@@ -206,12 +240,13 @@ Not a new heavy tutorial — only if playtesting shows gaps after track explaine
 
 ## What not to build yet
 
-- **Accounts / auth** — localStorage + export/import until retention proves demand.
+- **PWA / offline install** — deferred for now; revisit when installability matters.
+- **Achievement catalogs / streak counters / collection walls** — Form badges + Daily + Focus already own progression theater; don’t add a second trophy layer.
+- **Cloud accounts / auth** — localStorage + export/import until shared-device or multi-device demand is proven; if profiles ship first, keep them local-only.
 - **Leaderboards** — audience first; daily local challenge is cheaper.
-- **Achievement / streak systems** — not the AxiType wedge.
 - **Full Keybr parity** — own form coaching and Focus, not letter-frequency dashboards.
 - **Rewriting the engine** — `TypingEngine` is solid; extend, don’t replace.
-- **More than 12 missions** — deepen daily + Focus before adding content.
+- **More than 12 missions** — deepen Daily + Focus before adding content.
 - **Heavy first-run tutorial** — keep extending existing explainers; don’t add a standalone onboarding product.
 
 ---
@@ -223,7 +258,7 @@ Not a new heavy tutorial — only if playtesting shows gaps after track explaine
 | Component tests for `PromptLine`, `Results` | Medium | Layout regressions are costly |
 | E2E smoke (Playwright) | Medium | One happy path per track |
 | `calcStars` / unlock / `stageLocked` tests | Medium | Retrain drill gate |
-| `storage` / backup / analytics tests | Low–medium | Started (`progressBackup`, `analytics`, `statsSummary`) |
+| `storage` / backup / analytics tests | Low–medium | Started (`progressBackup`, `analytics`, `statsSummary`, `pastePractice`) |
 | Chart sample rate vs history window | Low | Fine for now |
 
 ---
@@ -234,12 +269,13 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 | Metric | Measurable? | Notes |
 |--------|-------------|-------|
-| Mission completion / abandon | **Yes*** | `roundCompleted` / `roundAbandoned` — *Restart currently counted as abandon until fixed* |
+| Mission completion / abandon | **Yes** | `roundCompleted` / `roundAbandoned`; Restart uses `roundRestarted` |
 | Drill CTA source mix | **Yes** | `drillStarted` with `hub` \| `stats` \| `results` |
 | Retrain adoption | **Partial** | `trackSwitched` + save `track` / form badges |
 | 3★ rate on late missions | **Yes** | `levelStars` / `roundHistory` |
-| Round starts | **Yes** | `roundStarted` (not in product KPIs yet) |
-| Daily challenge return (v1.6) | **After ship** | Date-keyed `dailyBest` + play events |
+| Round starts | **Yes** | `roundStarted` |
+| Daily challenge return | **Yes** | Date-keyed `dailyBest` + `dailyPlayed` |
+| Paste practice adoption | **Partial** | `roundStarted` with `levelId: "paste"` |
 
 ---
 
@@ -252,6 +288,6 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily** retention, **Insights** tuning, and **paste practice** is shipped through **v1.7**.
+AxiType’s core story plus **Daily**, **Insights**, **paste practice**, and **local profiles** is shipped through **v1.8**.
 
-**Next:** distribution (**PWA**) — without bolting on streaks, XP, or accounts.
+**Next:** milestone surfacing in Results/Hub or Insights polish. **Not next:** PWA, achievement catalogs, streaks, or collection walls. Cloud accounts can sync the same `axitype.profile` bundle later.
