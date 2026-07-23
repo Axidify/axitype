@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PACE_GATE_MESSAGE } from "../game/coaching";
 import styles from "./Hud.module.css";
 
@@ -22,6 +22,22 @@ export function Hud({
   paceCoach = false,
 }: HudProps) {
   const [showAccTip, setShowAccTip] = useState(false);
+  const [comboPop, setComboPop] = useState(false);
+  const prevCombo = useRef(combo);
+
+  useEffect(() => {
+    if (combo > prevCombo.current && combo > 1) {
+      setComboPop(false);
+      const frame = requestAnimationFrame(() => setComboPop(true));
+      const t = setTimeout(() => setComboPop(false), 280);
+      prevCombo.current = combo;
+      return () => {
+        cancelAnimationFrame(frame);
+        clearTimeout(t);
+      };
+    }
+    prevCombo.current = combo;
+  }, [combo]);
 
   return (
     <div className={styles.hud}>
@@ -30,7 +46,9 @@ export function Hud({
           <span className={styles.label}>Score</span>
           <strong>{score}</strong>
         </div>
-        <div className={`${styles.stat} ${combo > 1 ? styles.hot : ""}`}>
+        <div
+          className={`${styles.stat} ${combo > 1 ? styles.hot : ""} ${comboPop ? styles.comboPop : ""}`}
+        >
           <span className={styles.label}>Combo</span>
           <strong>×{combo}</strong>
         </div>

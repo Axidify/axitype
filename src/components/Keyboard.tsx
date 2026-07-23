@@ -20,6 +20,7 @@ interface KeyboardProps {
   dimInactive?: boolean;
   hidden?: boolean;
   flashKey?: string | null;
+  flashKind?: "hit" | "miss";
 }
 
 export function Keyboard({
@@ -28,6 +29,7 @@ export function Keyboard({
   dimInactive,
   hidden,
   flashKey,
+  flashKind = "miss",
 }: KeyboardProps) {
   if (hidden) {
     return <div className={styles.hiddenNote}>Keyboard hidden — Eyes Up. Trust the bumps.</div>;
@@ -47,7 +49,12 @@ export function Keyboard({
             const isHome = (HOME_ROW as readonly string[]).includes(key);
             const isReachHome = Boolean(homeOfFinger && homeOfFinger === key && !isTarget);
             const isActiveZone = finger === info.id;
-            const isFlash = flashKey?.toLowerCase() === key;
+            const isFlash = Boolean(
+              flashKey &&
+                (flashKey === " "
+                  ? false
+                  : flashKey.toLowerCase() === key || flashKey === key),
+            );
             return (
               <span
                 key={key}
@@ -57,7 +64,7 @@ export function Keyboard({
                   isTarget ? styles.target : "",
                   isActiveZone ? styles.zone : "",
                   isReachHome ? styles.reach : "",
-                  isFlash ? styles.flash : "",
+                  isFlash ? (flashKind === "hit" ? styles.flashHit : styles.flash) : "",
                   key === "f" || key === "j" ? styles.bump : "",
                 ]
                   .filter(Boolean)
@@ -77,6 +84,7 @@ export function Keyboard({
             styles.space,
             target === " " ? styles.target : "",
             finger === "RT" || finger === "LT" ? styles.zone : "",
+            flashKey === " " ? (flashKind === "hit" ? styles.flashHit : styles.flash) : "",
           ]
             .filter(Boolean)
             .join(" ")}

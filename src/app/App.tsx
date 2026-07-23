@@ -37,6 +37,15 @@ import {
   updateKeyStat,
   type ProgressState,
 } from "../lib/storage";
+import {
+  trackAnalytics,
+  type DrillStartSource,
+} from "../lib/analytics";
+import {
+  parseProgressImport,
+  progressExportFilename,
+  serializeProgressExport,
+} from "../lib/progressBackup";
 import styles from "./App.module.css";
 
 type View = "hub" | "arena" | "results" | "stats" | "focusGate";
@@ -134,6 +143,11 @@ export default function App() {
     setProgress((p) => fn(p));
   }, []);
 
+  const analyticsBase = () => ({
+    track: progress.track,
+    demoMode: progress.coachPrefs.demoMode,
+  });
+
   const nextRunId = () => {
     runIdRef.current += 1;
     return runIdRef.current;
@@ -163,6 +177,7 @@ export default function App() {
       timedSeconds: level.timedSeconds,
       runId: nextRunId(),
     });
+    trackAnalytics({ type: "roundStarted", levelId: id, ...analyticsBase() });
     setView("arena");
   };
 
@@ -186,6 +201,7 @@ export default function App() {
       timedSeconds,
       runId: nextRunId(),
     });
+    trackAnalytics({ type: "roundStarted", levelId: "practice", ...analyticsBase() });
     setView("arena");
   };
 
@@ -207,6 +223,7 @@ export default function App() {
       timedSeconds: config.timedSeconds,
       runId: nextRunId(),
     });
+    trackAnalytics({ type: "roundStarted", levelId: "gauntlet", ...analyticsBase() });
     setView("arena");
   };
 
@@ -240,6 +257,7 @@ export default function App() {
       eyesUp: run.plan.eyesUp,
       runId: nextRunId(),
     });
+    trackAnalytics({ type: "roundStarted", levelId: "focus", ...analyticsBase() });
     setView("arena");
   };
 
@@ -493,6 +511,7 @@ export default function App() {
     afterLevel: number,
     missCountsOverride?: Record<string, number>,
     returnToLevelId?: number,
+    source: DrillStartSource = "hub",
   ) => {
     const keyLevel = progress.coachPrefs.demoMode ? afterLevel : Math.min(afterLevel, progress.unlockedLevel);
     const level = getLevel(keyLevel);
@@ -515,12 +534,79 @@ export default function App() {
       eyesUp: built.eyesUp,
       runId: nextRunId(),
     });
+    trackAnalytics({ type: "drillStarted", kind, source, ...analyticsBase() });
+    trackAnalytics({ type: "roundStarted", levelId: "drill", drill: kind, ...analyticsBase() });
     setView("arena");
   };
+
+  const exitArena = () => {
+    if (session) {
+      trackAnalytics({
+        type: "roundAbandoned",
+        levelId: session.levelId,
+        drill: session.drill,
+        ...analyticsBase(),
+      });
+    }
+    setView("hub");
+  };
+
+  const restartArena = () => {
+    if (!session) return;
+    trackAnalytics({
+      type: "roundAbandoned",
+      levelId: session.levelId,
+      drill: session.drill,
+      ...analyticsBase(),
+    });
+
+    if (session.levelId === "gauntlet") {
+      startGauntlet();
+      return;
+    }
+    if (session.levelId === "focus" && session.focusRun) {
+      startFocusRound({ ...session.focusRun });
+      return;
+    }
+    if (session.levelId === "practice") {
+      startPractice(session.timedSeconds);
+      return;
+    }
+    if (session.levelId === "drill" && session.drill && session.drillAfterLevel != null) {
+      startDrill(
+        session.drill,
+        session.drillAfterLevel,
+        undefined,
+        session.returnToLevelId,
+        "hub",
+      );
+      return;
+    }
+    if (typeof session.levelId === "number") {
+      startLevel(session.levelId);
+    }
+  };
+
+  const canRestartChallenge =
+    session != null &&
+    (session.levelId === "gauntlet" ||
+      session.levelId === "focus" ||
+      (session.levelId === "practice" && Boolean(session.timedSeconds)));
 
   const applyResult = (result: ArenaResult) => {
     const { snapshot, levelId, drill, keyEvents } = result;
     const completed = snapshot.finished && !snapshot.timedOut;
+
+    trackAnalytics({
+      type: "roundCompleted",
+      levelId,
+      drill,
+      completed,
+      timedOut: snapshot.timedOut,
+      wpm: snapshot.wpm,
+      accuracy: snapshot.accuracy,
+      ...analyticsBase(),
+    });
 
     if (levelId === "gauntlet" && session?.gauntletRun) {
       const { wave, totalScore } = session.gauntletRun;
@@ -681,7 +767,16 @@ export default function App() {
       {view === "hub" && (
         <LevelHub
           progress={progress}
-          onTrack={(track: Track) =>
+          onTrack={(track: Track) => {
+            if (track !== progress.track) {
+              trackAnalytics({
+                type: "trackSwitched",
+                from: progress.track,
+                to: track,
+                track,
+                demoMode: progress.coachPrefs.demoMode,
+              });
+            }
             patchProgress((p) => ({
               ...p,
               track,
@@ -689,15 +784,15 @@ export default function App() {
                 ...p.coachPrefs,
                 formCoach: track === "retrain" ? true : p.coachPrefs.formCoach,
               },
-            }))
-          }
+            }));
+          }}
           onPlayLevel={startLevel}
           onPractice={startPractice}
           onGauntlet={startGauntlet}
           onFocus={startFocus}
           focusPreview={focusPreview}
           onStats={() => setView("stats")}
-          onDrill={startDrill}
+          onDrill={(kind, afterLevel) => startDrill(kind, afterLevel, undefined, undefined, "hub")}
           onToggleFormCoach={() =>
             patchProgress((p) => ({
               ...p,
@@ -748,7 +843,8 @@ export default function App() {
           focusReason={session.focusRun?.plan.reason}
           demoMode={progress.coachPrefs.demoMode}
           onFinished={applyResult}
-          onExit={() => setView("hub")}
+          onExit={exitArena}
+          onRestart={canRestartChallenge ? restartArena : undefined}
         />
       )}
 
@@ -794,6 +890,7 @@ export default function App() {
                 session.drillAfterLevel,
                 undefined,
                 session.returnToLevelId,
+                "results",
               );
             else startPractice(session?.timedSeconds);
           }}
@@ -812,6 +909,7 @@ export default function App() {
               afterLevel,
               missCounts,
               typeof lastResult.levelId === "number" ? lastResult.levelId : undefined,
+              "results",
             )
           }
         />
@@ -821,9 +919,27 @@ export default function App() {
         <Stats
           progress={progress}
           onBack={() => setView("hub")}
-          onWeakFinger={(missCounts) =>
-            startDrill("weakFinger", Math.min(9, progress.unlockedLevel), missCounts)
+          onSuggestedDrill={(kind, afterLevel, missCounts) =>
+            startDrill(kind, afterLevel, missCounts, undefined, "stats")
           }
+          onExportProgress={() => {
+            const blob = new Blob([serializeProgressExport(progress)], {
+              type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = progressExportFilename();
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          onImportProgress={(fileText) => {
+            const result = parseProgressImport(fileText);
+            if (!result.ok) return result;
+            saveProgress(result.progress);
+            setProgress(result.progress);
+            return { ok: true };
+          }}
         />
       )}
     </div>

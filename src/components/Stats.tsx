@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { fingerForKey } from "../game/fingers";
-import { weakestTypingFinger } from "../game/drills";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { suggestDrill, type DrillSuggestion } from "../game/drills";
+import type { DrillKind } from "../game/levels";
 import {
   aggregateMissCounts,
   missCountsToEntries,
@@ -8,6 +8,7 @@ import {
   type MissStatsWindow,
   type ProgressState,
 } from "../lib/storage";
+import { bestLevelRows, roundShortLabel } from "../lib/statsSummary";
 import { MissedKeysHeatmap } from "./charts/MissedKeysHeatmap";
 import { ProgressTrendChart } from "./charts/ProgressTrendChart";
 import styles from "./Stats.module.css";
@@ -15,7 +16,9 @@ import styles from "./Stats.module.css";
 interface StatsProps {
   progress: ProgressState;
   onBack: () => void;
-  onWeakFinger: (missCounts: Record<string, number>) => void;
+  onSuggestedDrill: (kind: DrillKind, afterLevel: number, missCounts: Record<string, number>) => void;
+  onExportProgress: () => void;
+  onImportProgress: (fileText: string) => { ok: true } | { ok: false; error: string };
 }
 
 const WINDOW_OPTIONS: { id: MissStatsWindow; label: string }[] = [
@@ -24,20 +27,41 @@ const WINDOW_OPTIONS: { id: MissStatsWindow; label: string }[] = [
   { id: "all", label: "All time" },
 ];
 
-export function Stats({ progress, onBack, onWeakFinger }: StatsProps) {
+export function Stats({
+  progress,
+  onBack,
+  onSuggestedDrill,
+  onExportProgress,
+  onImportProgress,
+}: StatsProps) {
   const [statsWindow, setStatsWindow] = useState<MissStatsWindow>("recent12");
+  const [backupStatus, setBackupStatus] = useState<string | null>(null);
+  const [backupError, setBackupError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const rounds = roundsForWindow(progress.roundHistory, statsWindow);
   const wpm = rounds.map((r) => r.wpm);
-  const labels = rounds.map((_, i) => `${i + 1}`);
+  const accuracy = rounds.map((r) => r.accuracy);
+  const labels = rounds.map((r, i) => `${roundShortLabel(r)}·${i + 1}`);
 
   const missCounts = aggregateMissCounts(progress, statsWindow);
   const misses = missCountsToEntries(missCounts);
 
-  const weak = weakestTypingFinger(missCounts);
-  const weakLabel = fingerForKey(
-    Object.keys(missCounts).find((k) => fingerForKey(k).id === weak) ?? "f",
-  ).label;
+  const suggestion: DrillSuggestion | null = useMemo(
+    () =>
+      suggestDrill(
+        missCounts,
+        [],
+        progress.unlockedLevel,
+        progress.coachPrefs.demoMode,
+      ),
+    [missCounts, progress.unlockedLevel, progress.coachPrefs.demoMode],
+  );
+
+  const levelRows = useMemo(
+    () => bestLevelRows(progress.bestByLevel, progress.levelStars, progress.unlockedLevel),
+    [progress.bestByLevel, progress.levelStars, progress.unlockedLevel],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -77,22 +101,130 @@ export function Stats({ progress, onBack, onWeakFinger }: StatsProps) {
         ))}
       </div>
 
-      {misses.length > 0 && (
+      {suggestion && (
         <div className={styles.ctaBox}>
-          <p>
-            Needs rehab: <strong>{weakLabel}</strong>
-          </p>
-          <button type="button" className={styles.cta} onClick={() => onWeakFinger(missCounts)}>
-            Start Weak Finger drill
+          <div className={styles.ctaCopy}>
+            <p className={styles.ctaTitle}>Suggested: {suggestion.title}</p>
+            <p className={styles.ctaReason}>{suggestion.reason}</p>
+          </div>
+          <button
+            type="button"
+            className={styles.cta}
+            onClick={() => onSuggestedDrill(suggestion.kind, suggestion.afterLevel, missCounts)}
+          >
+            Start {suggestion.title}
           </button>
         </div>
       )}
 
-      <h2>Recent WPM</h2>
-      <ProgressTrendChart wpm={wpm} labels={labels} />
+      <h2>Trends</h2>
+      {rounds.length === 0 ? (
+        <p className={styles.empty}>
+          No rounds in this window yet — finish a mission or practice to see trends.
+        </p>
+      ) : (
+        <ProgressTrendChart wpm={wpm} accuracy={accuracy} labels={labels} />
+      )}
+
+      <h2>Best by mission</h2>
+      {levelRows.every((row) => row.wpm == null && row.stars === 0) ? (
+        <p className={styles.empty}>Clear a mission to lock in a personal best.</p>
+      ) : (
+        <div className={styles.tableWrap}>
+          <table className={styles.bestTable}>
+            <thead>
+              <tr>
+                <th scope="col">Mission</th>
+                <th scope="col">Stars</th>
+                <th scope="col">Best WPM</th>
+                <th scope="col">Accuracy</th>
+                <th scope="col">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {levelRows.map((row) => (
+                <tr key={row.id}>
+                  <th scope="row">
+                    <span className={styles.missionId}>{row.id}</span>
+                    {row.title}
+                  </th>
+                  <td className={styles.stars}>
+                    {"★".repeat(row.stars)}
+                    {"☆".repeat(Math.max(0, 3 - row.stars))}
+                  </td>
+                  <td>{row.wpm == null ? "—" : row.wpm}</td>
+                  <td>{row.accuracy == null ? "—" : `${row.accuracy}%`}</td>
+                  <td>{row.score == null ? "—" : row.score.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <h2>Most missed keys</h2>
-      <MissedKeysHeatmap entries={misses} />
+      {misses.length === 0 ? (
+        <p className={styles.empty}>
+          No misses recorded here — keep typing, or widen the time window.
+        </p>
+      ) : (
+        <MissedKeysHeatmap entries={misses} />
+      )}
+
+      <h2>Backup</h2>
+      <div className={styles.backup}>
+        <p className={styles.backupNote}>
+          Download your progress as JSON, or restore from a backup on another device. Import replaces
+          the save on this browser.
+        </p>
+        <div className={styles.backupActions}>
+          <button
+            type="button"
+            className={styles.secondaryBtn}
+            onClick={() => {
+              onExportProgress();
+              setBackupError(null);
+              setBackupStatus("Progress downloaded.");
+            }}
+          >
+            Export progress
+          </button>
+          <button
+            type="button"
+            className={styles.secondaryBtn}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Import progress
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className={styles.fileInput}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const result = onImportProgress(text);
+                if (!result.ok) {
+                  setBackupStatus(null);
+                  setBackupError(result.error);
+                  return;
+                }
+                setBackupError(null);
+                setBackupStatus("Progress restored from backup.");
+              } catch {
+                setBackupStatus(null);
+                setBackupError("Couldn't read that file.");
+              }
+            }}
+          />
+        </div>
+        {backupStatus && <p className={styles.backupOk}>{backupStatus}</p>}
+        {backupError && <p className={styles.backupErr}>{backupError}</p>}
+      </div>
     </section>
   );
 }

@@ -73,6 +73,39 @@
 .flash {
   background: color-mix(in srgb, var(--bad) 35%, white) !important;
   border-color: var(--bad) !important;
+  animation: keyFlash calc(var(--motion, 1) * 160ms) ease-out;
+}
+
+.flashHit {
+  background: color-mix(in srgb, var(--good) 32%, white) !important;
+  border-color: var(--good) !important;
+  transform: translateY(-1px);
+  animation: keyFlashHit calc(var(--motion, 1) * 160ms) ease-out;
+}
+
+@keyframes keyFlash {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes keyFlashHit {
+  from {
+    transform: translateY(-2px) scale(1.05);
+  }
+  to {
+    transform: translateY(-1px) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash,
+  .flashHit {
+    animation: none;
+  }
 }
 
 .space {

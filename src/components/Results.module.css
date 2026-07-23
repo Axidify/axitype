@@ -7,6 +7,7 @@
   flex-direction: column;
   gap: 1.35rem;
   align-items: center;
+  animation: resultsIn calc(var(--motion, 1) * 420ms) var(--ease-snap, ease-out);
 }
 
 .hero {
@@ -34,12 +35,14 @@
   font-size: 1.65rem;
   color: var(--accent);
   letter-spacing: 0.15em;
+  animation: starPop calc(var(--motion, 1) * 560ms) var(--ease-snap, ease-out);
 }
 
 .gauntletHero {
   margin: 0.15rem 0 0;
   font-size: 1.15rem;
   color: var(--ink);
+  animation: starPop calc(var(--motion, 1) * 560ms) var(--ease-snap, ease-out);
 }
 
 .gauntletHero strong {
@@ -347,4 +350,38 @@
 .chart {
   width: 100%;
   margin-top: 0.25rem;
+}
+
+@keyframes resultsIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes starPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .stars,
+  .gauntletHero {
+    animation: none;
+  }
 }

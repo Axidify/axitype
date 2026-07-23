@@ -34,6 +34,7 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
   text-align: center;
+  animation: gateIn calc(var(--motion, 1) * 420ms) var(--ease-snap, ease-out);
 }
 
 .kicker {
@@ -43,6 +44,7 @@
   font-size: 0.75rem;
   color: var(--good);
   font-weight: 650;
+  animation: kickerPulse calc(var(--motion, 1) * 640ms) var(--ease-snap, ease-out);
 }
 
 .card h2 {
@@ -84,4 +86,33 @@
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-weight: 650;
+}
+
+@keyframes gateIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes kickerPulse {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.16em;
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .kicker {
+    animation: none;
+  }
 }
