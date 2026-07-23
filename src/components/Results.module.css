@@ -36,6 +36,23 @@
   letter-spacing: 0.15em;
 }
 
+.gauntletHero {
+  margin: 0.15rem 0 0;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.gauntletHero strong {
+  font-size: 1.65rem;
+  color: var(--accent);
+}
+
+.gauntletBest {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+
 .unlock {
   margin: 0.15rem 0 0;
   color: var(--good);

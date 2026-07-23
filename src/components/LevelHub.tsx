@@ -1,4 +1,5 @@
 import { DRILLS, getDrill } from "../game/drills";
+import { GAUNTLET_UNLOCK_LEVEL, isGauntletUnlocked } from "../game/gauntlet";
 import {
   accuracyGate,
   LEVELS,
@@ -14,6 +15,7 @@ interface LevelHubProps {
   onTrack: (track: Track) => void;
   onPlayLevel: (id: number) => void;
   onPractice: (timedSeconds?: number) => void;
+  onGauntlet: () => void;
   onStats: () => void;
   onDrill: (kind: DrillKind, afterLevel: number) => void;
   onToggleFormCoach: () => void;
@@ -40,6 +42,7 @@ export function LevelHub({
   onTrack,
   onPlayLevel,
   onPractice,
+  onGauntlet,
   onStats,
   onDrill,
   onToggleFormCoach,
@@ -50,6 +53,7 @@ export function LevelHub({
 }: LevelHubProps) {
   const demo = progress.coachPrefs.demoMode;
   const continueId = Math.min(progress.unlockedLevel, 12);
+  const gauntletOpen = isGauntletUnlocked(progress.unlockedLevel, demo);
   const gate = accuracyGate(progress.track);
   const showExplainer = !progress.coachPrefs.seenTrackExplainer;
   const showRetrainIntro =
@@ -93,6 +97,20 @@ export function LevelHub({
           </button>
           <button type="button" className={styles.secondary} onClick={() => onPractice(90)}>
             90s sprint
+          </button>
+          <button
+            type="button"
+            className={styles.gauntlet}
+            disabled={!gauntletOpen}
+            onClick={onGauntlet}
+            title={
+              gauntletOpen
+                ? "Endless waves — survive as long as you can"
+                : `Unlocks at Mission ${GAUNTLET_UNLOCK_LEVEL}`
+            }
+          >
+            Gauntlet
+            {progress.gauntletBest ? ` · best ${progress.gauntletBest.wavesCleared}` : ""}
           </button>
           <button type="button" className={styles.secondary} onClick={onStats}>
             Stats

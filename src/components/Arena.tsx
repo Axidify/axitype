@@ -17,7 +17,7 @@ import styles from "./Arena.module.css";
 export interface ArenaResult {
   snapshot: EngineSnapshot;
   title: string;
-  levelId: number | "practice" | "drill";
+  levelId: number | "practice" | "drill" | "gauntlet";
   drill?: DrillKind;
   keyEvents: { key: string; ms: number; hit: boolean }[];
 }
@@ -26,11 +26,13 @@ interface ArenaProps {
   title: string;
   prompt: string;
   progress: ProgressState;
-  levelId: number | "practice" | "drill";
+  levelId: number | "practice" | "drill" | "gauntlet";
   drill?: DrillKind;
   lockFinger?: FingerId;
   eyesUp?: boolean;
   timedSeconds?: number;
+  gauntletWave?: number;
+  gauntletScore?: number;
   demoMode?: boolean;
   onFinished: (result: ArenaResult) => void;
   onExit: () => void;
@@ -45,13 +47,20 @@ export function Arena({
   lockFinger,
   eyesUp,
   timedSeconds,
+  gauntletWave,
+  gauntletScore,
   demoMode,
   onFinished,
   onExit,
 }: ArenaProps) {
   const track: Track = progress.track;
   const formCoach = progress.coachPrefs.formCoach || track === "retrain";
-  const numericLevel = typeof levelId === "number" ? levelId : 1;
+  const numericLevel =
+    typeof levelId === "number"
+      ? levelId
+      : levelId === "gauntlet" && gauntletWave
+        ? Math.min(gauntletWave, progress.coachPrefs.demoMode ? 12 : progress.unlockedLevel)
+        : 1;
   const needsHome = showHomeCheck(track, numericLevel, progress.coachPrefs.skipHomeAfter5);
   const [homeDone, setHomeDone] = useState(!needsHome);
   const [hideKeyboard, setHideKeyboard] = useState(Boolean(eyesUp));
@@ -114,13 +123,21 @@ export function Arena({
   }, [prompt, track, timedSeconds, title, levelId, drill]);
 
   useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onExit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onExit]);
+
+  useEffect(() => {
     if (!homeDone) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === "Escape") {
-        onExit();
-        return;
-      }
+      if (e.key === "Escape") return;
       if (e.key.length !== 1) return;
       e.preventDefault();
       const engine = engineRef.current;
@@ -196,6 +213,9 @@ export function Arena({
           Exit
         </button>
         <h1>{title}</h1>
+        {levelId === "gauntlet" && gauntletScore !== undefined && gauntletScore > 0 && (
+          <span className={styles.gauntletScore}>Run {gauntletScore.toLocaleString()}</span>
+        )}
         {eyesUp && hideKeyboard && (
           <button type="button" className={styles.peek} onClick={peek}>
             Peek 2s
@@ -230,8 +250,6 @@ export function Arena({
         />
       )}
 
-      {showHands && <HandDiagram active={activeFinger} />}
-
       <Keyboard
         target={snap.target}
         activeFinger={activeFinger}
@@ -239,6 +257,8 @@ export function Arena({
         hidden={hideKeyboard}
         flashKey={snap.lastMiss ? snap.target : null}
       />
+
+      {showHands && <HandDiagram active={activeFinger} />}
     </section>
   );
 }

@@ -10,8 +10,9 @@ export type KeyStatMap = Record<string, KeyStat>;
 
 export interface RoundHistoryEntry {
   at: number;
-  levelId: number | "practice" | "drill";
+  levelId: number | "practice" | "drill" | "gauntlet";
   drill?: DrillKind;
+  gauntletWave?: number;
   wpm: number;
   accuracy: number;
   score: number;
@@ -21,12 +22,19 @@ export interface RoundHistoryEntry {
 
 export type MissStatsWindow = "recent12" | "week" | "all";
 
+export interface GauntletBest {
+  wavesCleared: number;
+  totalScore: number;
+  at: number;
+}
+
 export interface ProgressState {
   track: Track;
   unlockedLevel: number;
   levelStars: Record<number, number>;
   formBadges: Record<string, boolean>;
   bestByLevel: Record<number, { score: number; wpm: number; accuracy: number }>;
+  gauntletBest?: GauntletBest;
   roundHistory: RoundHistoryEntry[];
   missCounts: Record<string, number>;
   keyStats: KeyStatMap;

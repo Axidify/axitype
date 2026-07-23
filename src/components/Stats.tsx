@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fingerForKey } from "../game/fingers";
 import { weakestTypingFinger } from "../game/drills";
 import {
@@ -25,19 +25,30 @@ const WINDOW_OPTIONS: { id: MissStatsWindow; label: string }[] = [
 ];
 
 export function Stats({ progress, onBack, onWeakFinger }: StatsProps) {
-  const [window, setWindow] = useState<MissStatsWindow>("recent12");
+  const [statsWindow, setStatsWindow] = useState<MissStatsWindow>("recent12");
 
-  const rounds = roundsForWindow(progress.roundHistory, window);
+  const rounds = roundsForWindow(progress.roundHistory, statsWindow);
   const wpm = rounds.map((r) => r.wpm);
   const labels = rounds.map((_, i) => `${i + 1}`);
 
-  const missCounts = aggregateMissCounts(progress, window);
+  const missCounts = aggregateMissCounts(progress, statsWindow);
   const misses = missCountsToEntries(missCounts);
 
   const weak = weakestTypingFinger(missCounts);
   const weakLabel = fingerForKey(
     Object.keys(missCounts).find((k) => fingerForKey(k).id === weak) ?? "f",
   ).label;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onBack();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onBack]);
 
   return (
     <section className={styles.wrap}>
@@ -57,9 +68,9 @@ export function Stats({ progress, onBack, onWeakFinger }: StatsProps) {
           <button
             key={opt.id}
             type="button"
-            className={window === opt.id ? styles.windowActive : styles.windowBtn}
-            onClick={() => setWindow(opt.id)}
-            aria-pressed={window === opt.id}
+            className={statsWindow === opt.id ? styles.windowActive : styles.windowBtn}
+            onClick={() => setStatsWindow(opt.id)}
+            aria-pressed={statsWindow === opt.id}
           >
             {opt.label}
           </button>
