@@ -1,8 +1,8 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.6.0  
-**Status:** Released — Daily challenge (local best per day).
+**Current version:** v1.6.1  
+**Status:** Released — Insights (local analytics tips + soft Focus/Daily length tuning).
 
 ---
 
@@ -12,9 +12,13 @@
 
 1. Custom text / paste-your-own practice
 2. PWA / offline install
-3. Instrumentation-backed gate/copy tuning (`roundRestarted` now distinct from abandon)
 
-**Just shipped (v1.6 — Daily lane):**
+**Just shipped (v1.6.1 — Insights):**
+
+- Stats → Insights (finish rate, drill sources, coaching tips from `axitype.analytics.v1`)
+- Soft Focus accuracy / Daily prompt length when restart rates climb
+
+**Previously shipped (v1.6 — Daily lane):**
 
 - Daily challenge — date-seeded prompt, local best, hub entry, results callout
 - Restart / `dailyPlayed` / `roundRestarted` analytics
@@ -144,11 +148,11 @@ Practice mode extension: paste text, filter to unlocked charset (or warn on unkn
 
 Not a new heavy tutorial — only if playtesting shows gaps after track explainer + RetrainIntro: tighten Learn/Retrain → ★★ unlock → Stats/Focus copy.
 
-### 4. Instrumentation-backed tuning
+### 4. Instrumentation-backed tuning ✅ shipped (v1.6.1)
 
 **Impact:** Medium · **Effort:** Low–medium
 
-Use `axitype.analytics.v1` to inspect abandon rate (after restart fix), drill CTA sources, Retrain adoption — then tighten gates / copy. No third-party SDK.
+`summarizeAnalytics` → Stats Insights (finish rate, drill sources, tips) + soft length overrides for Focus accuracy / Daily prompts when restart rates climb. Further gate/copy tweaks still open once more play data exists.
 
 ---
 
@@ -180,12 +184,13 @@ Use `axitype.analytics.v1` to inspect abandon rate (after restart fix), drill CT
 ### v1.7 — *(next)*
 - Custom / paste practice
 - PWA install
-- Analytics-informed copy / gate tweaks
+- Further analytics-informed copy / gate tweaks
 
 ### Shipped
 
 | Slice | Contents |
 |-------|----------|
+| **v1.6.1 Insights** | Stats Insights + soft Focus/Daily length tuning |
 | **v1.6 Daily lane** | Daily challenge + local best; restart analytics cleanup |
 | **v1.5 Stickiness** | Polish, stats depth, instrumentation, backup, Restart |
 | **v1.4 Focus** | Focus rehab + gates; Gauntlet coaching; v1.4.1 syllable prompts |
@@ -242,6 +247,6 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily** retention is shipped through **v1.6**.
+AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily** retention and **Insights** tuning is shipped through **v1.6.1**.
 
-**Next:** deepen practice power (**paste text**) and distribution (**PWA**), guided by local analytics — without bolting on streaks, XP, or accounts.
+**Next:** deepen practice power (**paste text**) and distribution (**PWA**) — without bolting on streaks, XP, or accounts.

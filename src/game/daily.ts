@@ -56,13 +56,14 @@ export function buildDailyPrompt(
   keys: string,
   stats: KeyStatMap | undefined,
   dateKey = localDateKey(),
+  targetLength = DAILY_PROMPT_LENGTH,
 ): string {
   const mode = promptModeForPractice(keys);
   return withSeededRandom(dailySeed(dateKey), () =>
     buildSessionPrompt({
       mode,
       keys,
-      targetLength: DAILY_PROMPT_LENGTH,
+      targetLength,
       stats,
       preferAlternating: true,
       preferShort: false,

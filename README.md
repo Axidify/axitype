@@ -17,12 +17,12 @@ npm run dev
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** v1.7 candidates — custom/paste practice, PWA, analytics-informed tuning.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** v1.7 candidates — custom/paste practice, PWA.
 
 ## What’s included
 
 - Learn / Retrain tracks with Form Coach (hand diagram, finger chip, reach cues)
 - 12 campaign missions + habit drills (One Finger, Home Return, Alternating Hands, Eyes Up, Weak Finger)
-- Focus rehab + Gauntlet waves; timed sprints; Stats trends and progress backup
+- Focus rehab + Gauntlet waves; timed sprints; Daily challenge; Stats Insights + progress backup
 - Live WPM sparkline (AxiCharts)
 - Adaptive weak-key prompts and localStorage progress (`axitype.v1`)

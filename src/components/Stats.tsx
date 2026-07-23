@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { suggestDrill, type DrillSuggestion } from "../game/drills";
 import type { DrillKind } from "../game/levels";
+import { loadAnalytics } from "../lib/analytics";
+import { formatFinishRate, summarizeAnalytics } from "../lib/analyticsInsights";
 import {
   aggregateMissCounts,
   missCountsToEntries,
@@ -61,6 +63,11 @@ export function Stats({
   const levelRows = useMemo(
     () => bestLevelRows(progress.bestByLevel, progress.levelStars, progress.unlockedLevel),
     [progress.bestByLevel, progress.levelStars, progress.unlockedLevel],
+  );
+
+  const insights = useMemo(
+    () => summarizeAnalytics(loadAnalytics()),
+    [progress.roundHistory.length, progress.dailyBest?.attempts, progress.dailyBest?.at],
   );
 
   useEffect(() => {
@@ -170,6 +177,54 @@ export function Stats({
       ) : (
         <MissedKeysHeatmap entries={misses} />
       )}
+
+      <h2>Insights</h2>
+      <div className={styles.insights}>
+        <p className={styles.backupNote}>
+          From local play events on this device — used to ease Focus/Daily length when restarts pile
+          up. Demo rounds are ignored.
+        </p>
+        <div className={styles.insightStats}>
+          <div>
+            <span className={styles.insightLabel}>Finish rate</span>
+            <strong>{formatFinishRate(insights.finishRate)}</strong>
+          </div>
+          <div>
+            <span className={styles.insightLabel}>Restarts</span>
+            <strong>{insights.restarted}</strong>
+          </div>
+          <div>
+            <span className={styles.insightLabel}>Daily days</span>
+            <strong>{insights.uniqueDailyDays}</strong>
+          </div>
+          <div>
+            <span className={styles.insightLabel}>Top drill source</span>
+            <strong>{insights.topDrillSource ?? "—"}</strong>
+          </div>
+        </div>
+        <ul className={styles.tipList}>
+          {insights.tips.map((tip) => (
+            <li
+              key={tip.id}
+              className={tip.severity === "warn" ? styles.tipWarn : styles.tipInfo}
+            >
+              <strong>{tip.title}</strong>
+              <span>{tip.detail}</span>
+            </li>
+          ))}
+        </ul>
+        {(insights.focusAccuracyLength < 42 || insights.dailyPromptLength < 110) && (
+          <p className={styles.tuningNote}>
+            Active tuning:
+            {insights.focusAccuracyLength < 42
+              ? ` Focus accuracy prompts → ${insights.focusAccuracyLength} chars.`
+              : ""}
+            {insights.dailyPromptLength < 110
+              ? ` Daily prompts → ${insights.dailyPromptLength} chars.`
+              : ""}
+          </p>
+        )}
+      </div>
 
       <h2>Backup</h2>
       <div className={styles.backup}>
