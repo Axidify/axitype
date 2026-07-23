@@ -32,6 +32,7 @@
 
 .primary,
 .secondary,
+.daily,
 .track,
 .trackOn,
 .node,
@@ -54,6 +55,15 @@
   color: var(--ink);
   padding: 0.75rem 1rem;
   border-radius: 8px;
+}
+
+.daily {
+  border: 1px solid color-mix(in srgb, var(--finger-li) 45%, var(--lane));
+  background: color-mix(in srgb, var(--finger-li) 12%, white);
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 650;
 }
 
 .gauntlet {

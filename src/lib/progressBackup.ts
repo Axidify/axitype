@@ -93,7 +93,8 @@ function normalizeRoundHistory(value: unknown): ProgressState["roundHistory"] {
       levelId === "practice" ||
       levelId === "drill" ||
       levelId === "gauntlet" ||
-      levelId === "focus";
+      levelId === "focus" ||
+      levelId === "daily";
     if (!validLevel) continue;
     const drill = entry.drill;
     out.push({
@@ -127,6 +128,19 @@ function normalizeKeyStats(value: unknown): ProgressState["keyStats"] {
   return out;
 }
 
+function normalizeDailyBest(value: unknown): ProgressState["dailyBest"] {
+  if (!isRecord(value)) return undefined;
+  if (typeof value.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value.date)) return undefined;
+  return {
+    date: value.date,
+    wpm: asNumber(value.wpm, 0),
+    accuracy: asNumber(value.accuracy, 0),
+    score: asNumber(value.score, 0),
+    at: asNumber(value.at, Date.now()),
+    attempts: Math.max(1, Math.round(asNumber(value.attempts, 1))),
+  };
+}
+
 /** Merge unknown JSON into a safe ProgressState (same spirit as loadProgress). */
 export function normalizeProgress(raw: unknown): ProgressState | null {
   if (!isRecord(raw)) return null;
@@ -147,6 +161,7 @@ export function normalizeProgress(raw: unknown): ProgressState | null {
           at: asNumber(raw.gauntletBest.at, Date.now()),
         }
       : undefined,
+    dailyBest: normalizeDailyBest(raw.dailyBest),
     roundHistory: normalizeRoundHistory(raw.roundHistory),
     missCounts: asStringRecord(raw.missCounts),
     keyStats: normalizeKeyStats(raw.keyStats),

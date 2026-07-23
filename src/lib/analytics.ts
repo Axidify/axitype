@@ -5,7 +5,7 @@ export const ANALYTICS_MAX_EVENTS = 200;
 
 export type DrillStartSource = "stats" | "results" | "hub";
 
-export type RoundLevelId = number | "practice" | "drill" | "gauntlet" | "focus";
+export type RoundLevelId = number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
 
 type AnalyticsBase = {
   at: number;
@@ -32,6 +32,15 @@ export type AnalyticsEvent =
       type: "roundAbandoned";
       levelId: RoundLevelId;
       drill?: DrillKind;
+    })
+  | (AnalyticsBase & {
+      type: "roundRestarted";
+      levelId: RoundLevelId;
+      drill?: DrillKind;
+    })
+  | (AnalyticsBase & {
+      type: "dailyPlayed";
+      date: string;
     })
   | (AnalyticsBase & {
       type: "drillStarted";

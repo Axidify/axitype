@@ -25,6 +25,14 @@ import {
   isFocusUnlocked,
   type FocusRunState,
 } from "../game/focus";
+import {
+  buildDailyPrompt,
+  formatDailyLabel,
+  isBetterDailyRun,
+  localDateKey,
+  todaysDailyBest,
+  type DailyBest,
+} from "../game/daily";
 import { getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
 import { buildSessionPrompt, promptModeForLevel, promptModeForPractice } from "../game/prompts";
 import { calcStars } from "../game/scoring";
@@ -53,7 +61,7 @@ type View = "hub" | "arena" | "results" | "stats" | "focusGate";
 interface Session {
   title: string;
   prompt: string;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
   drill?: DrillKind;
   drillAfterLevel?: number;
   /** Mission to resume after a rehab drill launched from Results. */
@@ -65,6 +73,16 @@ interface Session {
   focusRun?: FocusRunState;
   /** Bumps every start/retry so Arena remounts with a fresh run. */
   runId: number;
+}
+
+interface DailySummary {
+  date: string;
+  wpm: number;
+  accuracy: number;
+  score: number;
+  completed: boolean;
+  isNewBest: boolean;
+  previousBest: DailyBest | null;
 }
 
 interface GauntletSummary {
@@ -117,6 +135,7 @@ export default function App() {
   const [unlockedNext, setUnlockedNext] = useState(false);
   const [gauntletSummary, setGauntletSummary] = useState<GauntletSummary | null>(null);
   const [focusSummary, setFocusSummary] = useState<FocusSummary | null>(null);
+  const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
   const [focusGate, setFocusGate] = useState<FocusGateState | null>(null);
   const runIdRef = useRef(0);
   const lastPromptRef = useRef<string | null>(null);
@@ -202,6 +221,24 @@ export default function App() {
       runId: nextRunId(),
     });
     trackAnalytics({ type: "roundStarted", levelId: "practice", ...analyticsBase() });
+    setView("arena");
+  };
+
+  const startDaily = () => {
+    const dateKey = localDateKey();
+    const prompt = buildDailyPrompt(unlockedKeys, progress.keyStats, dateKey);
+    lastPromptRef.current = prompt;
+    setDailySummary(null);
+    setGauntletSummary(null);
+    setFocusSummary(null);
+    setSession({
+      title: `Daily · ${formatDailyLabel(dateKey)}`,
+      prompt,
+      levelId: "daily",
+      runId: nextRunId(),
+    });
+    trackAnalytics({ type: "dailyPlayed", date: dateKey, ...analyticsBase() });
+    trackAnalytics({ type: "roundStarted", levelId: "daily", ...analyticsBase() });
     setView("arena");
   };
 
@@ -487,6 +524,35 @@ export default function App() {
             missCounts: roundMisses,
           },
         ].slice(-40);
+      } else if (levelId === "daily") {
+        const dateKey = localDateKey();
+        const completedRound = snapshot.finished && !snapshot.timedOut;
+        const prev = todaysDailyBest(p.dailyBest, dateKey);
+        const attempts = (prev?.attempts ?? 0) + 1;
+        if (completedRound && isBetterDailyRun(snapshot, prev)) {
+          next.dailyBest = {
+            date: dateKey,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+            score: snapshot.score,
+            at: Date.now(),
+            attempts,
+          };
+        } else if (prev) {
+          next.dailyBest = { ...prev, attempts };
+        }
+        next.roundHistory = [
+          ...next.roundHistory,
+          {
+            at: Date.now(),
+            levelId,
+            wpm: snapshot.wpm,
+            accuracy: snapshot.accuracy,
+            score: snapshot.score,
+            stars: 0,
+            missCounts: roundMisses,
+          },
+        ].slice(-40);
       } else {
         next.roundHistory = [
           ...next.roundHistory,
@@ -554,7 +620,7 @@ export default function App() {
   const restartArena = () => {
     if (!session) return;
     trackAnalytics({
-      type: "roundAbandoned",
+      type: "roundRestarted",
       levelId: session.levelId,
       drill: session.drill,
       ...analyticsBase(),
@@ -566,6 +632,10 @@ export default function App() {
     }
     if (session.levelId === "focus" && session.focusRun) {
       startFocusRound({ ...session.focusRun });
+      return;
+    }
+    if (session.levelId === "daily") {
+      startDaily();
       return;
     }
     if (session.levelId === "practice") {
@@ -591,6 +661,7 @@ export default function App() {
     session != null &&
     (session.levelId === "gauntlet" ||
       session.levelId === "focus" ||
+      session.levelId === "daily" ||
       (session.levelId === "practice" && Boolean(session.timedSeconds)));
 
   const applyResult = (result: ArenaResult) => {
@@ -731,6 +802,22 @@ export default function App() {
     setUnlockedNext(unlocked);
     setLastResult(result);
 
+    if (levelId === "daily") {
+      const dateKey = localDateKey();
+      const prev = todaysDailyBest(progress.dailyBest, dateKey);
+      setDailySummary({
+        date: dateKey,
+        wpm: snapshot.wpm,
+        accuracy: snapshot.accuracy,
+        score: snapshot.score,
+        completed,
+        isNewBest: completed && isBetterDailyRun(snapshot, prev),
+        previousBest: prev,
+      });
+    } else {
+      setDailySummary(null);
+    }
+
     if (progress.coachPrefs.demoMode) {
       setView("results");
       return;
@@ -788,6 +875,7 @@ export default function App() {
           }}
           onPlayLevel={startLevel}
           onPractice={startPractice}
+          onDaily={startDaily}
           onGauntlet={startGauntlet}
           onFocus={startFocus}
           focusPreview={focusPreview}
@@ -883,6 +971,7 @@ export default function App() {
           onRetry={() => {
             if (lastResult.levelId === "gauntlet") startGauntlet();
             else if (lastResult.levelId === "focus") startFocus();
+            else if (lastResult.levelId === "daily") startDaily();
             else if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
             else if (lastResult.drill && session?.drillAfterLevel)
               startDrill(
@@ -899,6 +988,7 @@ export default function App() {
           gauntletSummary={gauntletSummary}
           gauntletBest={progress.gauntletBest}
           focusSummary={focusSummary}
+          dailySummary={dailySummary}
           returnToLevelId={
             lastResult.levelId === "drill" ? session?.returnToLevelId ?? null : null
           }

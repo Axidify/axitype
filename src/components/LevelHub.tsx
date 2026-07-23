@@ -1,4 +1,5 @@
 import { DRILLS, getDrill } from "../game/drills";
+import { formatDailyLabel, localDateKey, todaysDailyBest } from "../game/daily";
 import { FOCUS_UNLOCK_LEVEL, isFocusUnlocked } from "../game/focus";
 import { GAUNTLET_UNLOCK_LEVEL, isGauntletUnlocked } from "../game/gauntlet";
 import {
@@ -16,6 +17,7 @@ interface LevelHubProps {
   onTrack: (track: Track) => void;
   onPlayLevel: (id: number) => void;
   onPractice: (timedSeconds?: number) => void;
+  onDaily: () => void;
   onGauntlet: () => void;
   onFocus: () => void;
   focusPreview?: string | null;
@@ -45,6 +47,7 @@ export function LevelHub({
   onTrack,
   onPlayLevel,
   onPractice,
+  onDaily,
   onGauntlet,
   onFocus,
   focusPreview = null,
@@ -60,6 +63,8 @@ export function LevelHub({
   const continueId = Math.min(progress.unlockedLevel, 12);
   const gauntletOpen = isGauntletUnlocked(progress.unlockedLevel, demo);
   const focusOpen = isFocusUnlocked(progress.unlockedLevel, demo);
+  const dateKey = localDateKey();
+  const dailyBest = todaysDailyBest(progress.dailyBest, dateKey);
   const gate = accuracyGate(progress.track);
   const showExplainer = !progress.coachPrefs.seenTrackExplainer;
   const showRetrainIntro =
@@ -97,6 +102,15 @@ export function LevelHub({
           </button>
           <button type="button" className={styles.secondary} onClick={() => onPractice()}>
             Practice
+          </button>
+          <button
+            type="button"
+            className={styles.daily}
+            onClick={onDaily}
+            title="One shared prompt for today — chase your local best"
+          >
+            Daily · {formatDailyLabel(dateKey)}
+            {dailyBest ? ` · best ${dailyBest.wpm}` : ""}
           </button>
           <button type="button" className={styles.secondary} onClick={() => onPractice(60)}>
             60s sprint

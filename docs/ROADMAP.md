@@ -1,32 +1,44 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.2.0  
-**Status:** Released — clarity, readable prompts, Retrain onboarding, timed practice, Results UX.
+**Current version:** v1.6.0  
+**Status:** Released — Daily challenge (local best per day).
 
 ---
 
-## Current focus (v1.5 — “Stickiness”)
+## Current focus (v1.7 — candidates)
 
-**Ship next (in order):**
+**Ship next (pick one):**
 
-1. Local instrumentation (round/drill events)
-2. Remaining stats depth (accuracy trend, best per level)
-3. Visual polish pass
-4. Export / import progress
+1. Custom text / paste-your-own practice
+2. PWA / offline install
+3. Instrumentation-backed gate/copy tuning (`roundRestarted` now distinct from abandon)
 
-**Just shipped (v1.2 — clarity + prompts + Retrain):**
+**Just shipped (v1.6 — Daily lane):**
 
-- Results star breakdown, unlock hints, miss coaching, Results UX hierarchy
-- Hybrid readable prompts (chunks / pseudo-words / sentences)
-- Retrain onboarding + smarter drill suggestions
-- Timed practice (60s / 90s), demo mode
-- Return-to-mission after rehab drills; thumb excluded from One Finger
+- Daily challenge — date-seeded prompt, local best, hub entry, results callout
+- Restart / `dailyPlayed` / `roundRestarted` analytics
+- Roadmap + README synced to post–v1.5 reality
 
-**Previously (v1.1):**
-- Wider layout + labeled WPM chart
+**Previously shipped (v1.5 — Stickiness):**
 
-**Defer:** More stats depth, accounts, leaderboards, new missions beyond 12.
+- Visual polish (caret / hit / miss / combo; Results + Focus gate micro-celebration)
+- Stats depth (WPM + accuracy trends, window averages + early/late delta, best-by-mission, smarter drill CTA)
+- Local instrumentation (`axitype.analytics.v1`)
+- Progress export / import (Stats → Backup)
+- Arena Restart for timed sprints, Gauntlet, Focus (not campaign missions)
+
+**Earlier:**
+
+| Version | Theme |
+|---------|--------|
+| v1.4.1 | Focus syllable-shaped prompts |
+| v1.4.0 | Focus mode + progress gates; Gauntlet results coaching |
+| v1.3 | Gauntlet, Escape to hub, arena layout |
+| v1.2 | Clarity, hybrid prompts, Retrain onboarding, timed practice, miss coaching |
+| v1.1 | Wider layout + labeled WPM chart |
+
+**Defer:** Accounts, leaderboards, achievements / streaks, new missions beyond 12, full Keybr analytics parity.
 
 ---
 
@@ -36,53 +48,68 @@ AxiType is a browser-based touch typing tutor with:
 
 - **Learn / Retrain tracks** — different coaching intensity and progression gates
 - **12 campaign missions** + **5 habit drills**
+- **Focus mode** — data-driven rehab (accuracy → speed tiers), unlock preview on hub, syllable-shaped prompts
+- **Gauntlet** — endless escalating waves with personal best + results coaching
 - **Form Coach** — hand diagram, finger chip, home-row check, miss tips
 - **Hybrid prompts** — placement chunks (1–4), pseudo-words (5–9), sentences (10–12)
 - **Live WPM sparkline**, combo scoring, pace gating (Retrain)
-- **Local progress** — `localStorage` (`axitype.v1`), stats charts, star ratings
+- **Timed sprints** (60s / 90s), **demo mode**, **Escape → hub** from arena / results / stats
+- **Drills** — Form badges on Retrain; return-to-mission after rehab from Results; suggested from Results / Stats
+- **Stats** — time windows, miss heatmap, WPM + accuracy trends, best-by-mission, backup
+- **Local progress** — `axitype.v1` + optional `axitype.analytics.v1`
 
-**Core differentiator:** Retrain is not just “hard mode.” It is a structured path for breaking bad habits — mandatory drills between stages, stronger coaching, pace gates, Eyes Up sprints.
+**Core differentiator:** Retrain + Focus are not “hard mode.” They are structured paths for breaking bad habits — mandatory drills, stronger coaching, pace gates, Eyes Up, and weakness-targeted rehab.
 
-**Positioning:** Stronger than most apps at habit rehab and form coaching; behind Keybr on per-key analytics depth and behind Monkeytype on speed-test variety / social features. Compete on Retrain, not breadth.
+**Positioning:** Stronger than most apps at habit rehab and form coaching; behind Keybr on per-key analytics depth and behind Monkeytype on speed-test variety / social features. Compete on Retrain / Focus, not breadth.
 
-**Main gaps vs mature typing apps:** in-app rule clarity, readable early prompts, broader timed/custom modes, accounts/leaderboards, deeper analytics.
+**Main gaps vs mature typing apps:** daily/recurring reason to return, custom/paste practice, PWA install, accounts/leaderboards (intentionally deferred).
 
-**Progression scope (for clarity):**
+**Progression scope:**
+
 - **Missions** — star ratings and `unlockedLevel` (Learn: accuracy gate; Retrain: accuracy gate + drill badges between stages)
-- **Practice** — no stars, no unlocks; uses unlocked key charset
-- **Drills** — grant Form badges on Retrain (required to unlock later missions); no campaign unlock on Learn
+- **Practice / sprints** — no stars; unlocked key charset; Restart in arena for timed sprints only among practice modes
+- **Drills** — Form badges on Retrain; suggested from Results / Stats
+- **Focus / Gauntlet** — separate loops with their own pass rules and bests; Restart mid-run
 
 ---
 
-## Completed / in progress
+## Completed (shipped)
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Stable prompt layout (`PromptLine`) | **Done** | Measure/paint pattern; no reflow on wrap |
-| Per-round `missCounts` in `roundHistory` | **Done** | Saved on each round; powers time-windowed stats |
-| Stats time windows | **Done** | Last 12 rounds / last 7 days / all time |
-| Finger-zone miss heatmap | **Done** | `MissedKeysHeatmap`; intensity by miss count, color by finger |
-| Weak Finger CTA from Stats window | **Done** | Drill uses the selected time window’s misses |
-| Post-mission miss coaching UI | **Done** (this branch) | Results top-3 misses + Weak Finger CTA |
-| Results star breakdown | **Done** (this branch) | `explainStars` on Results |
-| Hub unlock / drill-gate copy | **Done** (this branch) | Mission cards + highlighted drill |
-| Track explainer + accuracy tip | **Done** (this branch) | `seenTrackExplainer`, HUD `?` |
-| Hybrid readable prompts | **Done** | `buildSessionPrompt`, chunks/pseudo/sentences — v1.3 |
-| Retrain onboarding | **Done** | `RetrainIntro.tsx`, `seenRetrainIntro` — v1.4 |
-| Smarter drill suggestions | **Done** | `suggestDrill()` on Results — v1.4 |
-| Timed practice sprints | **Done** | 60s / 90s from hub — v1.4 |
+| Item | Version | Notes |
+|------|---------|-------|
+| Prompt layout (`PromptLine` measure/paint) | early | No reflow on wrap |
+| Per-round `missCounts` + Stats windows | early | Last 12 / 7 days / all time |
+| Finger-zone miss heatmap | early | `MissedKeysHeatmap` |
+| Results star breakdown + unlock hints | **v1.2** | `explainStars` |
+| Hub Learn/Retrain explainer + drill-gate copy | **v1.2** | |
+| HUD accuracy tooltip | **v1.2** | |
+| Hybrid readable prompts | **v1.2** | chunks / pseudo / sentences |
+| Retrain onboarding | **v1.2** | `RetrainIntro` |
+| Results miss coaching + `suggestDrill()` | **v1.2** | Stats CTA uses same helper in **v1.5** |
+| Timed practice 60s / 90s + demo mode | **v1.2** | |
+| Return-to-mission after drills | **v1.2** | |
+| Gauntlet + Escape to hub | **v1.3** | |
+| Focus mode + progress gates | **v1.4** | Hub preview / unlock gating |
+| Gauntlet results coaching | **v1.4** | Gap tips on fail |
+| Focus syllable-shaped prompts | **v1.4.1** | |
+| Visual polish pass | **v1.5** | Arena feedback + Results/FocusGate motion |
+| Stats depth (accuracy trend, best-by-mission) | **v1.5** | Window averages + early/late delta |
+| Local instrumentation | **v1.5** | `src/lib/analytics.ts` |
+| Progress export / import | **v1.5** | `src/lib/progressBackup.ts` |
+| Challenge Restart (sprints / Gauntlet / Focus) | **v1.5** | Not campaign missions |
 
 ---
 
-## Guiding principles for what to build next
+## Guiding principles
 
-1. **Explain the rules in-app** — players should never need to read source code to understand stars, unlocks, or accuracy.
-2. **Make Retrain the headline** — this is what Monkeytype and Keybr do not offer.
+1. **Explain the rules in-app** — players should never need to read source to understand stars, unlocks, or accuracy.
+2. **Make Retrain / Focus the headline** — what Monkeytype and Keybr do not offer.
 3. **Pedagogy before features** — readable drills beat random letter chains; see [hybrid-prompt-text.md](./plans/hybrid-prompt-text.md).
 4. **Small, shippable slices** — each item below should be releasable on its own.
-5. **Keep the codebase lean** — ~45 source files in `src/`; resist platform creep until core loop is undeniable.
+5. **Keep the codebase lean** — resist platform creep until the core loop is undeniable.
+6. **Retention without bloat** — prefer daily challenge / useful practice over achievements, streaks, and XP walls.
 
-**`coachPrefs` pattern:** New one-time flags (`seenTrackExplainer`, `seenRetrainIntro`, `seenTutorial`) should merge via the same `loadProgress()` spread used for existing prefs — don’t break saved games.
+**`coachPrefs` pattern:** New one-time flags merge via the same `loadProgress()` spread — don’t break saved games. Backup schema is `axitype.progress` v1 (`progressBackup.ts`). Extend that merge when adding `dailyBest`.
 
 ---
 
@@ -90,245 +117,48 @@ AxiType is a browser-based touch typing tutor with:
 
 | Tier | Meaning | Target |
 |------|---------|--------|
-| **P0** | High impact, low–medium effort — do first | Next 1–2 weeks |
-| **P1** | High impact, medium effort — core product bet | Next 1–2 months |
-| **P2** | Medium impact — polish and retention | When P0/P1 are stable |
-| **P3** | Nice-to-have or strategic bets | Later / if audience demands |
+| **P0** | Highest ROI for the next release | v1.6 |
+| **P1** | Core product bets after daily lane | Next 1–2 months |
+| **P2** | Polish / retention follow-ons | When P0/P1 stable |
+| **P3** | Strategic / audience-demand | Later |
 
 ---
 
-## P0 — In-app clarity (highest ROI)
+## P0 — v1.6 Daily challenge ✅ shipped
 
-Players currently miss rules that exist in code but are not surfaced in UI.
-
-**Recommended order:** 1 → 4 → 5 → 7 (UI only) → 2 → 3
-
-### 1. Results screen: show why stars were awarded
-
-**Impact:** Very high · **Effort:** Low
-
-On `Results.tsx`, add a short breakdown:
-
-| Stars | Requirement |
-|-------|-------------|
-| ★ | Finish the full prompt (not timed out) |
-| ★★ | Accuracy ≥ 94% (Learn) or ≥ 96% (Retrain) |
-| ★★★ | ★★ + level WPM target for your track + no peek |
-
-**Notes:**
-- 3★ is available on **any mission** that has a WPM target — not only Level 12.
-- **Peek** only exists on Eyes Up (Level 12, Retrain only). If you peek anywhere and meet the WPM target, 3★ is capped at 2★ (`calcStars`).
-- **Timed out** (Level 12, 90s) → 0★, no unlock. Surface this explicitly on results.
-
-If the player got 1★, show: *“Need 94% accuracy to unlock the next mission — you had 91.2%.”*
-
-**Touches:** `Results.tsx`, `levels.ts` (`accuracyGate`, `wpmTarget`), `scoring.ts` (`calcStars`).
+Daily challenge loop is live in **v1.6.0**: date-seeded prompt, `dailyBest` on progress (merged in backup), hub entry, results best callout, `dailyPlayed` + `roundRestarted` analytics.
 
 ---
 
-### 2. Hub: explain Learn vs Retrain before first mission
+## P1 — After daily lane
 
-**Impact:** High · **Effort:** Low
+### 2. Custom text / paste-your-own
 
-Add a one-time tooltip or expandable panel on `LevelHub.tsx`:
+**Impact:** Medium · **Effort:** Medium
 
-- **Learn** — calmer coaching, 94% gate, optional Form Coach
-- **Retrain** — mandatory home check, pace gates, drill gates between stages, 96% gate
+Practice mode extension: paste text, filter to unlocked charset (or warn on unknown keys).
 
-**Touches:** `LevelHub.tsx`, `coachPrefs.seenTrackExplainer`.
-
-*Overlaps with P1 Retrain onboarding — ship this first as a lightweight explainer; expand in v1.3 if needed.*
-
----
-
-### 3. Accuracy tooltip in the arena HUD
-
-**Impact:** Medium-high · **Effort:** Low
-
-Accuracy works differently from most typing sites: each miss permanently costs `1 / promptLength` and correct keys never raise it again. Add a `?` or subtitle on the HUD:
-
-> *“Accuracy = keys you got right out of the full prompt. Misses stick.”*
-
-**Touches:** `Hud.tsx`, `scoring.ts` (`calcAccuracy` comment is already the spec).
-
----
-
-### 4. Mission card: show unlock requirements on locked/next level
+### 3. Extend existing hub explainers (only if needed)
 
 **Impact:** Medium · **Effort:** Low
 
-On each mission node in `LevelHub.tsx`, show:
+Not a new heavy tutorial — only if playtesting shows gaps after track explainer + RetrainIntro: tighten Learn/Retrain → ★★ unlock → Stats/Focus copy.
 
-- `★★ 94%+ to unlock next` (Learn)
-- `★★ 96%+ to unlock next` (Retrain)
-- WPM target for 3★ (muted, per track via `wpmTarget`)
-
-**Touches:** `LevelHub.tsx`, `levels.ts`.
-
----
-
-### 5. Retrain drill-gate messaging on locked missions
-
-**Impact:** High · **Effort:** Low
-
-On Retrain, missions can be locked even when `unlockedLevel` is high. `stageLocked()` in `LevelHub.tsx` requires the **previous level’s drill Form badge** (`formBadgeKey`).
-
-When a mission is drill-locked, show on the card:
-
-> *“Complete **Home Return** drill to unlock Mission 5.”*
-
-Link or highlight the relevant drill in the Habit drills section.
-
-**Touches:** `LevelHub.tsx`, `levels.ts` (`unlockDrill`), `drills.ts`.
-
----
-
-### 6. Post-mission miss summary on Results *(quick win — data exists)*
-
-**Impact:** High · **Effort:** Low
-
-**~40% done** — `roundHistory[].missCounts` and `ArenaResult.keyEvents` already capture per-run misses. UI not wired.
-
-After a round with accuracy below gate, show top 3 missed keys from **this run** and a drill suggestion:
-
-- Missed `r`, `f`, `v` → “Try One Finger (right index)”
-- Many same-hand pairs → “Try Alternating Hands”
-
-**Touches:** `Results.tsx` (pass `keyEvents` or round `missCounts` from `App.tsx`), `drills.ts`.
-
-*Full drill-mapping logic can expand in P1; start with miss list + Weak Finger / Alternating Hands CTA.*
-
----
-
-## P1 — Core product bets
-
-### 7. Hybrid prompt text (readable missions)
-
-**Impact:** Very high · **Effort:** Medium-high
-
-Early missions currently use digraph chains that can read as gibberish. Levels 1–4 should teach finger placement with intentional chunks; 5–9 pseudo-words; 10–12 real sentences.
-
-**Full spec:** [docs/plans/hybrid-prompt-text.md](./plans/hybrid-prompt-text.md)
-
-**Why P1:** This is the single biggest pedagogy upgrade. Retrain and Learn both benefit immediately.
-
-**Touches:** `prompts.ts`, new `promptChunks.ts` / `pseudoWords.ts` / `sentences.ts`, `App.tsx`, `drills.ts`, tests.
-
-**Ship with v1.2:** Drill spacing fixes (Home Return, Alternating Hands) from the hybrid plan — don’t defer to v1.3.
-
----
-
-### 8. Retrain onboarding flow
-
-**Impact:** High · **Effort:** Medium
-
-When switching to Retrain for the first time, walk through:
-
-1. What “bad habit” means in this app (peeking, wrong finger, same-hand pecking)
-2. Home-row check (why Space to start)
-3. Pace gate (“slow down — reset to home”)
-4. Drill gates between stages (must earn Form badge)
-
-Could be a 3-screen modal or a dedicated “Retrain intro” mission (Mission 0).
-
-**Touches:** new `RetrainIntro.tsx`, `LevelHub.tsx`, `coachPrefs.seenRetrainIntro`.
-
-*Build on P0 #2 and #5 — avoid repeating the same copy.*
-
----
-
-### 9. Post-mission coaching → drill mapping (full)
-
-**Impact:** High · **Effort:** Medium
-
-Extend P0 #6 with smarter drill routing, miss pattern detection (same-hand pairs, reach errors), and deep links into `startDrill`.
-
-**Touches:** `Results.tsx`, `drills.ts`, new `suggestDrill(missCounts)` helper.
-
----
-
-### 10. Timed mode option (practice + late campaign)
-
-**Impact:** Medium-high · **Effort:** Medium
-
-Only Level 12 has `timedSeconds: 90` today (Retrain only; Eyes Up). Add optional 60s / 90s timed practice from the hub, and consider timed variants for missions 10–12.
-
-**Timed-out behavior:** Clock hits zero → `timedOut: true`, `finished: true`, 0★. Explain on results and in hub copy before starting.
-
-**Touches:** `levels.ts`, `App.tsx` (`startPractice`), `Arena.tsx`, `Hud.tsx` (timer already exists).
-
----
-
-## P2 — Polish and retention
-
-### 11. Hub onboarding (fold tutorial into P0)
+### 4. Instrumentation-backed tuning
 
 **Impact:** Medium · **Effort:** Low–medium
 
-Avoid a separate heavy tutorial if P0 explainers land. Optional 3-step first-visit overlay on hub:
-
-1. Pick Learn or Retrain
-2. Earn ★★ to unlock the next mission
-3. Check Stats for weak keys
-
-**Touches:** `LevelHub.tsx`, `coachPrefs.seenTutorial`.
-
-*Skip if P0 items 1–5 are sufficient — validate with playtesting.*
+Use `axitype.analytics.v1` to inspect abandon rate (after restart fix), drill CTA sources, Retrain adoption — then tighten gates / copy. No third-party SDK.
 
 ---
 
-### 12. Stats page — remaining depth
+## P2 — Nice polish
 
-**Impact:** Medium · **Effort:** Medium
-
-**Already shipped:** time windows (last 12 / 7 days / all time), finger-zone keyboard heatmap (`MissedKeysHeatmap`), Weak Finger CTA (uses selected window).
-
-**Still to add:**
-- Accuracy trend chart (not just WPM)
-- Best run per level (from `bestByLevel` / `roundHistory`)
-- Smarter “Suggested drill” beyond Weak Finger (tie to P1 #9)
-
-**Touches:** `Stats.tsx`, `roundHistory`, `ProgressTrendChart` or new accuracy chart.
-
----
-
-### 13. Keyboard / visual polish pass
-
-**Impact:** Medium · **Effort:** Medium
-
-- Stronger caret animation on correct/miss (without layout shift — keep `PromptLine` measure/paint pattern)
-- Mission-complete micro-celebration (combo flare, star pop)
-- Consistent empty states (no stats yet, no drills unlocked)
-
-**Touches:** `Keyboard.tsx`, `Results.module.css`, `Arena.module.css`, `tokens.css`.
-
----
-
-### 14. Export / import progress
-
-**Impact:** Medium (niche) · **Effort:** Low–medium
-
-Let players back up `axitype.v1` as JSON or sync via file. No accounts required.
-
-Include schema version validation on import — `ProgressState` shape will grow with new `coachPrefs` flags.
-
-**Touches:** `storage.ts`, small UI in `LevelHub` or `Stats`.
-
----
-
-### 15. Local instrumentation for success metrics
-
-**Impact:** Medium (enables learning) · **Effort:** Low–medium
-
-Success metrics below are mostly **not measurable today**. Add lightweight local events before optimizing gates:
-
-- `roundStarted` / `roundCompleted` / `roundAbandoned` (Escape from arena)
-- `drillStarted` with `source: "stats" | "results" | "hub"`
-- `trackSwitched`
-
-Store in `roundHistory` metadata or a small `analytics.v1` key. No third-party SDK required for v1.
-
-**Touches:** `App.tsx`, `storage.ts`, optional `analytics.ts`.
+| Item | Notes |
+|------|--------|
+| PWA / offline install | Vite PWA plugin; already fully client-side |
+| More Focus/Gauntlet UX polish | From playtesting |
+| E2E smoke (Playwright) | start → type → results per track |
 
 ---
 
@@ -336,116 +166,82 @@ Store in `roundHistory` metadata or a small `analytics.v1` key. No third-party S
 
 | Item | Impact | Effort | Notes |
 |------|--------|--------|-------|
-| Custom text / paste-your-own | Medium | Medium | Practice mode extension; charset filter |
-| Daily challenge | Medium | Medium | One shared prompt per day, local best score |
-| PWA / offline install | Low-medium | Low | Vite PWA plugin; already fully client-side |
-| Accounts + cloud sync | High (if scaling) | High | Only if user base justifies it |
-| Multiplayer / races | Medium | High | TypeRacer lane; different product direction |
-| Mobile soft keyboard | Low | High | Touch typing tutor is desktop-first |
-
----
-
-## Impact vs effort matrix
-
-```
-                    LOW EFFORT          HIGH EFFORT
-                 ┌──────────────────┬──────────────────┐
-    HIGH IMPACT  │ P0: Star rules   │ P1: Hybrid       │
-                 │ P0: Track explainer│     prompts    │
-                 │ P0: Retrain lock │ P1: Retrain intro│
-                 │ P0: Miss summary │ P1: Drill mapping│
-                 │ P0: Mission reqs │                  │
-                 ├──────────────────┼──────────────────┤
-    MED IMPACT   │ P0: Accuracy tip │ P2: Stats depth  │
-                 │ P2: Export save  │ P2: Visual polish│
-                 │ P2: Instrumentation│ P1: Timed practice│
-                 │                  │ P3: Custom text  │
-                 └──────────────────┴──────────────────┘
-```
-
-**Start here:** See [Current focus](#current-focus-v12--know-the-rules) — P0 clarity items, then hybrid prompts.
+| Accounts + cloud sync | High (if scaling) | High | Backup JSON is enough until demand |
+| Leaderboards | Medium | High | Need audience; daily local best is cheaper |
+| Achievements / streaks | Low–medium | Medium | Defer — retention theater |
+| Multiplayer / races | Medium | High | Different product direction |
+| Mobile soft keyboard | Low | High | Desktop-first touch typing |
+| Missions beyond 12 | Low now | Medium | Deepen existing loop first |
 
 ---
 
 ## Suggested release slices
 
-### v1.2 — “Know the rules”
-- Results star breakdown + unlock / timed-out hints
-- Mission unlock requirements on cards
-- Retrain drill-gate messaging on locked missions
-- Results miss summary (top keys this run)
-- Hub track explainer
-- HUD accuracy tooltip
+### v1.7 — *(next)*
+- Custom / paste practice
+- PWA install
+- Analytics-informed copy / gate tweaks
 
-*Order matches [Current focus](#current-focus-v12--know-the-rules). Branch: `feature/know-the-rules`.*
+### Shipped
 
-### v1.3 — “Readable drills”
-- Hybrid prompt system (per [hybrid-prompt-text.md](./plans/hybrid-prompt-text.md))
-- Drill spacing fixes (Home Return, Alternating Hands) — ship with prompts, not later
-
-### v1.4 — “Retrain matters”
-- Retrain onboarding (extends v1.2 explainers)
-- Full post-mission drill suggestions (P1 #9)
-- Optional timed practice
-
-### v1.5 — “Stickiness”
-- Local instrumentation (P2 #15)
-- Remaining stats depth (accuracy trend, best per level)
-- Visual polish pass
-- Export / import progress
+| Slice | Contents |
+|-------|----------|
+| **v1.6 Daily lane** | Daily challenge + local best; restart analytics cleanup |
+| **v1.5 Stickiness** | Polish, stats depth, instrumentation, backup, Restart |
+| **v1.4 Focus** | Focus rehab + gates; Gauntlet coaching; v1.4.1 syllable prompts |
+| **v1.3 Gauntlet** | Gauntlet, Escape, arena layout |
+| **v1.2 Know the rules** | Clarity, hybrid prompts, Retrain onboarding, timed practice, miss coaching |
 
 ---
 
 ## What not to build yet
 
-- **Accounts / auth** — localStorage is fine until retention proves demand.
-- **Leaderboards** — need audience first; daily local challenge is cheaper.
-- **Full Keybr parity** — focus on form coaching, not letter-frequency heatmaps.
+- **Accounts / auth** — localStorage + export/import until retention proves demand.
+- **Leaderboards** — audience first; daily local challenge is cheaper.
+- **Achievement / streak systems** — not the AxiType wedge.
+- **Full Keybr parity** — own form coaching and Focus, not letter-frequency dashboards.
 - **Rewriting the engine** — `TypingEngine` is solid; extend, don’t replace.
-- **More than 12 missions** — fix prompt quality on existing levels before adding content.
-- **Standalone first-run tutorial** — fold into P0 hub explainers unless playtesting shows a gap.
+- **More than 12 missions** — deepen daily + Focus before adding content.
+- **Heavy first-run tutorial** — keep extending existing explainers; don’t add a standalone onboarding product.
 
 ---
 
-## Technical health (ongoing, not user-facing)
+## Technical health (ongoing)
 
 | Item | Priority | Notes |
 |------|----------|-------|
 | Component tests for `PromptLine`, `Results` | Medium | Layout regressions are costly |
-| E2E smoke (Playwright): start → type → results | Medium | One happy path per track |
-| `calcStars` / unlock / `stageLocked` integration test | Medium | Star rules + Retrain drill gate |
-| `storage.test.ts` coverage for `aggregateMissCounts` | Low | Already started |
-| Performance: chart sample rate vs history window | Low | 250ms / 240 samples is fine for now |
+| E2E smoke (Playwright) | Medium | One happy path per track |
+| `calcStars` / unlock / `stageLocked` tests | Medium | Retrain drill gate |
+| `storage` / backup / analytics tests | Low–medium | Started (`progressBackup`, `analytics`, `statsSummary`) |
+| Chart sample rate vs history window | Low | Fine for now |
 
 ---
 
-## Success metrics (how we know it’s working)
+## Success metrics
 
-Requires P2 #15 instrumentation unless noted.
+Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still in `roundHistory` / `levelStars`.
 
-| Metric | Measurable today? | Notes |
-|--------|-------------------|-------|
-| Mission 1 completion rate | **No** | Needs `roundCompleted` events |
-| Retry rate before unlock | **Partial** | Infer from `roundHistory` per `levelId` |
-| Retrain track adoption | **Partial** | `progress.track` + drill badges in save |
-| Drill usage from Stats / Results | **No** | Needs `drillStarted` with source |
+| Metric | Measurable? | Notes |
+|--------|-------------|-------|
+| Mission completion / abandon | **Yes*** | `roundCompleted` / `roundAbandoned` — *Restart currently counted as abandon until fixed* |
+| Drill CTA source mix | **Yes** | `drillStarted` with `hub` \| `stats` \| `results` |
+| Retrain adoption | **Partial** | `trackSwitched` + save `track` / form badges |
 | 3★ rate on late missions | **Yes** | `levelStars` / `roundHistory` |
+| Round starts | **Yes** | `roundStarted` (not in product KPIs yet) |
+| Daily challenge return (v1.6) | **After ship** | Date-keyed `dailyBest` + play events |
 
 ---
 
 ## Related docs
 
-- [Hybrid prompt text plan](./plans/hybrid-prompt-text.md) — detailed P1 prompt refactor
+- [Hybrid prompt text plan](./plans/hybrid-prompt-text.md) — prompt system reference
 - [README](../README.md) — run scripts and feature summary
 
 ---
 
 ## Summary
 
-AxiType’s path to a stronger v2 is not “more features.” It is:
+AxiType’s core story (rules clarity → readable missions → Retrain / Focus rehab) plus **Daily** retention is shipped through **v1.6**.
 
-1. **Tell players the rules** (P0 / v1.2 — see [Current focus](#current-focus-v12--know-the-rules))
-2. **Make missions readable and teach intentionally** (P1 prompts)
-3. **Own the Retrain story** (P1 onboarding + miss coaching)
-
-Do those three and the app moves from “solid side project” to “product I’d recommend to someone unlearning bad habits.”
+**Next:** deepen practice power (**paste text**) and distribution (**PWA**), guided by local analytics — without bolting on streaks, XP, or accounts.
