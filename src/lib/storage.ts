@@ -10,9 +10,10 @@ export type KeyStatMap = Record<string, KeyStat>;
 
 export interface RoundHistoryEntry {
   at: number;
-  levelId: number | "practice" | "drill" | "gauntlet";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
   drill?: DrillKind;
   gauntletWave?: number;
+  focusRound?: number;
   wpm: number;
   accuracy: number;
   score: number;

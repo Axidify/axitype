@@ -91,10 +91,12 @@ export function generateOneFingerGroups(
   fingerKeys: string[],
   targetLength: number,
   stats?: KeyStatMap,
+  focusBoost?: string,
 ): string {
   const pool = fingerKeys.filter((k) => /[a-z;,\.']/.test(k));
   if (pool.length === 0) return "fff fff rrr";
-  const key = pickWeighted(pool, stats);
+  const boost = focusBoost && pool.includes(focusBoost) ? focusBoost : undefined;
+  const key = pickWeighted(pool, stats, boost);
   const units: string[] = [];
   while (units.join(" ").length < targetLength) {
     units.push(key.repeat(3));

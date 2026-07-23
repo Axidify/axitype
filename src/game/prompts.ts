@@ -86,6 +86,7 @@ export function generateHomeReturnDrill(
   keys: string,
   targetLength: number,
   stats?: KeyStatMap,
+  focusBoost?: string,
 ): string {
   const pool = allowedChars(keys);
   let offHome = pool.filter((c) => !"asdfjkl; ".includes(c) && c !== " ");
@@ -94,7 +95,11 @@ export function generateHomeReturnDrill(
   }
   const units: string[] = [];
   while (units.join("  ").length < targetLength) {
-    const reach = pickWeighted(offHome, stats);
+    const reach = pickWeighted(
+      offHome,
+      stats,
+      focusBoost && offHome.includes(focusBoost) ? focusBoost : undefined,
+    );
     const home = fingerForKey(reach).home;
     if (pool.includes(home)) {
       units.push(`${reach} ${home}`);
@@ -109,6 +114,7 @@ export function generateAlternatingDrill(
   keys: string,
   targetLength: number,
   stats?: KeyStatMap,
+  focusBoost?: string,
 ): string {
   const pool = allowedChars(keys).filter((c) => c !== " ");
   const leftKeys = pool.filter((c) => fingerForKey(c).hand === "left");
@@ -118,7 +124,13 @@ export function generateAlternatingDrill(
   }
   const units: string[] = [];
   while (units.join(" ").length < targetLength) {
-    units.push(pickWeighted(leftKeys, stats) + pickWeighted(rightKeys, stats));
+    const leftBoost =
+      focusBoost && leftKeys.includes(focusBoost) ? focusBoost : undefined;
+    const rightBoost =
+      focusBoost && rightKeys.includes(focusBoost) ? focusBoost : undefined;
+    units.push(
+      pickWeighted(leftKeys, stats, leftBoost) + pickWeighted(rightKeys, stats, rightBoost),
+    );
   }
   return trimToLength(units.join(" "), targetLength);
 }
@@ -127,11 +139,14 @@ export function generateOneFingerDrill(
   finger: FingerId,
   targetLength: number,
   stats?: KeyStatMap,
+  focusBoost?: string,
 ): string {
   // Thumb only owns space — not a useful one-finger rehab zone.
   const target: FingerId = finger === "LT" || finger === "RT" ? "LI" : finger;
   const keys = keysForFinger(target).filter((k) => /[a-z;,\.']/.test(k));
-  return generateOneFingerGroups(keys.length ? keys : ["f", "g", "r", "t"], targetLength, stats);
+  const pool = keys.length ? keys : ["f", "g", "r", "t"];
+  const boost = focusBoost && pool.includes(focusBoost) ? focusBoost : undefined;
+  return generateOneFingerGroups(pool, targetLength, stats, boost);
 }
 
 /** @deprecated Use buildSessionPrompt — kept for tests migrating off digraph output. */

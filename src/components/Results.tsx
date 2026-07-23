@@ -15,7 +15,7 @@ import styles from "./Results.module.css";
 interface ResultsProps {
   title: string;
   snapshot: EngineSnapshot;
-  levelId: number | "practice" | "drill" | "gauntlet";
+  levelId: number | "practice" | "drill" | "gauntlet" | "focus";
   drill?: DrillKind;
   track: Track;
   stars: number;
@@ -31,6 +31,19 @@ interface ResultsProps {
     newBest: boolean;
   } | null;
   gauntletBest?: GauntletBest;
+  focusSummary?: {
+    rounds: number;
+    accuracyRounds: number;
+    speedRounds: number;
+    reason: string;
+    focusTitle: string;
+    fingerLabel: string;
+    zone: string;
+    lastAccuracy: number;
+    lastWpm: number;
+    targetWpm: number;
+    lastFocusMisses: number;
+  } | null;
   onRetry: () => void;
   onNext: (levelId: number) => void;
   onHub: () => void;
@@ -57,6 +70,7 @@ export function Results({
   keyEvents,
   gauntletSummary = null,
   gauntletBest,
+  focusSummary = null,
   onRetry,
   onNext,
   onHub,
@@ -67,6 +81,7 @@ export function Results({
   const [showStarRules, setShowStarRules] = useState(false);
   const completed = snapshot.finished && !snapshot.timedOut;
   const isGauntlet = levelId === "gauntlet" && gauntletSummary !== null;
+  const isFocus = levelId === "focus" && focusSummary !== null;
   const level = typeof levelId === "number" ? getLevel(levelId) : null;
   const isMission = level !== null;
   const canAdvance = nextLevelId !== null;
@@ -92,6 +107,22 @@ export function Results({
     () => suggestDrill(roundMisses, keyEvents, unlockedLevel, demoMode),
     [roundMisses, keyEvents, unlockedLevel, demoMode],
   );
+  const gauntletWaveGate =
+    isGauntlet && gauntletSummary
+      ? gauntletAccuracyForWave(gauntletSummary.failedWave, track)
+      : null;
+  const gauntletFocus = useMemo(() => {
+    if (!isGauntlet || !gauntletSummary || gauntletWaveGate === null) return null;
+    if (!completed || snapshot.timedOut) {
+      return "Finish the wave before time runs out — incomplete prompts don't count.";
+    }
+    if (snapshot.accuracy < gauntletWaveGate) {
+      const gap = gauntletWaveGate - snapshot.accuracy;
+      const gapLabel = Number.isInteger(gap) ? `${gap}` : gap.toFixed(1);
+      return `You were ${gapLabel} points below the ${gauntletWaveGate}% accuracy bar for wave ${gauntletSummary.failedWave}.`;
+    }
+    return null;
+  }, [isGauntlet, gauntletSummary, gauntletWaveGate, completed, snapshot.timedOut, snapshot.accuracy]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -119,7 +150,9 @@ export function Results({
   const displayStars = breakdown?.stars ?? stars;
   const unlockedEnough = displayStars >= 2;
   const kicker =
-    isGauntlet
+    isFocus
+      ? "Zone cleared"
+      : isGauntlet
       ? gauntletSummary.newBest
         ? "New best run"
         : "Gauntlet over"
@@ -132,6 +165,10 @@ export function Results({
             : "Round over";
 
   const statusLine = (() => {
+    if (isFocus && focusSummary) {
+      if (demoMode) return "Demo session — progress not saved";
+      return `Nailed ${focusSummary.fingerLabel} at ${focusSummary.lastAccuracy}% accuracy, then hit ${focusSummary.lastWpm} WPM (target ${focusSummary.targetWpm}).`;
+    }
     if (isGauntlet && gauntletSummary) {
       const gate = gauntletAccuracyForWave(gauntletSummary.failedWave, track);
       if (demoMode) return "Demo run — best not saved";
@@ -156,13 +193,20 @@ export function Results({
   const statusTone =
     (unlockedNext && !demoMode) ||
     (canReturnToMission && completed) ||
+    isFocus ||
     (isGauntlet && gauntletSummary?.newBest)
       ? styles.statusGood
       : styles.statusHint;
 
   const gate = accuracyGate(track);
-  const accuracyBelowGate = isMission && snapshot.accuracy < gate;
-  const showCoach = !isGauntlet && (topMisses.length > 0 || Boolean(drillSuggestion));
+  const accuracyBelowGate =
+    (isMission && snapshot.accuracy < gate) ||
+    (isGauntlet && gauntletWaveGate !== null && snapshot.accuracy < gauntletWaveGate);
+  const showCoach =
+    isFocus ||
+    topMisses.length > 0 ||
+    Boolean(drillSuggestion) ||
+    Boolean(gauntletFocus);
 
   return (
     <section className={styles.wrap}>
@@ -173,6 +217,12 @@ export function Results({
           <p className={styles.gauntletHero}>
             <strong>{gauntletSummary.wavesCleared}</strong> waves cleared ·{" "}
             {gauntletSummary.totalScore.toLocaleString()} run score
+          </p>
+        ) : isFocus && focusSummary ? (
+          <p className={styles.gauntletHero}>
+            <strong>{focusSummary.fingerLabel}</strong> · {focusSummary.accuracyRounds} accuracy
+            {focusSummary.accuracyRounds === 1 ? " round" : " rounds"} → {focusSummary.speedRounds}{" "}
+            speed {focusSummary.speedRounds === 1 ? "round" : "rounds"}
           </p>
         ) : (
           <p className={styles.stars}>
@@ -235,7 +285,8 @@ export function Results({
         ) : (
           <>
             <button type="button" className={styles.primary} onClick={onRetry}>
-              {isGauntlet ? "Run again" : "Retry"} <span className={styles.kbd}>Space</span>
+              {isGauntlet ? "Run again" : isFocus ? "Train again" : "Retry"}{" "}
+              <span className={styles.kbd}>Space</span>
             </button>
             <button type="button" className={styles.ghost} onClick={onHub}>
               Hub
@@ -246,6 +297,15 @@ export function Results({
 
       {showCoach && (
         <div className={styles.coach}>
+          {(isGauntlet || isFocus) && (
+            <h2 className={styles.coachTitle}>
+              {isFocus ? "What you drilled" : "What to work on"}
+            </h2>
+          )}
+          {isFocus && focusSummary && (
+            <p className={styles.gauntletFocus}>{focusSummary.reason}</p>
+          )}
+          {gauntletFocus && <p className={styles.gauntletFocus}>{gauntletFocus}</p>}
           {topMisses.length > 0 && (
             <div className={styles.missRow}>
               <span className={styles.missLabel}>Missed</span>
@@ -259,7 +319,7 @@ export function Results({
               </ul>
             </div>
           )}
-          {drillSuggestion && onSuggestedDrill && (
+          {drillSuggestion && onSuggestedDrill && !isFocus && (
             <div className={styles.suggestRow}>
               <p className={styles.suggestReason}>{drillSuggestion.reason}</p>
               <button
