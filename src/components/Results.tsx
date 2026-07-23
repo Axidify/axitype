@@ -16,7 +16,7 @@ import styles from "./Results.module.css";
 interface ResultsProps {
   title: string;
   snapshot: EngineSnapshot;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
+  levelId: number | "practice" | "paste" | "drill" | "gauntlet" | "focus" | "daily";
   drill?: DrillKind;
   track: Track;
   stars: number;
@@ -328,6 +328,8 @@ export function Results({
                   ? "Train again"
                   : isDaily
                     ? "Try again"
+                    : levelId === "paste"
+                      ? "Type again"
                     : "Retry"}{" "}
               <span className={styles.kbd}>Space</span>
             </button>

@@ -33,6 +33,7 @@ import {
   todaysDailyBest,
   type DailyBest,
 } from "../game/daily";
+import { pastePracticeTitle, preparePastePrompt } from "../game/pastePractice";
 import { getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
 import { buildSessionPrompt, promptModeForLevel, promptModeForPractice } from "../game/prompts";
 import { calcStars } from "../game/scoring";
@@ -63,7 +64,7 @@ type View = "hub" | "arena" | "results" | "stats" | "focusGate";
 interface Session {
   title: string;
   prompt: string;
-  levelId: number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
+  levelId: number | "practice" | "paste" | "drill" | "gauntlet" | "focus" | "daily";
   drill?: DrillKind;
   drillAfterLevel?: number;
   /** Mission to resume after a rehab drill launched from Results. */
@@ -73,6 +74,8 @@ interface Session {
   timedSeconds?: number;
   gauntletRun?: GauntletRunState;
   focusRun?: FocusRunState;
+  /** Original paste input for restart. */
+  pasteSource?: string;
   /** Bumps every start/retry so Arena remounts with a fresh run. */
   runId: number;
 }
@@ -225,6 +228,22 @@ export default function App() {
       runId: nextRunId(),
     });
     trackAnalytics({ type: "roundStarted", levelId: "practice", ...analyticsBase() });
+    setView("arena");
+  };
+
+  const startPastePractice = (rawText: string) => {
+    const prepared = preparePastePrompt(rawText, unlockedKeys);
+    if (!prepared.ok) return;
+    const prompt = prepared.prompt;
+    lastPromptRef.current = prompt;
+    setSession({
+      title: pastePracticeTitle(prompt),
+      prompt,
+      levelId: "paste",
+      pasteSource: rawText,
+      runId: nextRunId(),
+    });
+    trackAnalytics({ type: "roundStarted", levelId: "paste", ...analyticsBase() });
     setView("arena");
   };
 
@@ -649,6 +668,10 @@ export default function App() {
       startPractice(session.timedSeconds);
       return;
     }
+    if (session.levelId === "paste" && session.pasteSource) {
+      startPastePractice(session.pasteSource);
+      return;
+    }
     if (session.levelId === "drill" && session.drill && session.drillAfterLevel != null) {
       startDrill(
         session.drill,
@@ -669,6 +692,7 @@ export default function App() {
     (session.levelId === "gauntlet" ||
       session.levelId === "focus" ||
       session.levelId === "daily" ||
+      session.levelId === "paste" ||
       (session.levelId === "practice" && Boolean(session.timedSeconds)));
 
   const applyResult = (result: ArenaResult) => {
@@ -882,6 +906,8 @@ export default function App() {
           }}
           onPlayLevel={startLevel}
           onPractice={startPractice}
+          unlockedKeys={unlockedKeys}
+          onPastePractice={startPastePractice}
           onDaily={startDaily}
           onGauntlet={startGauntlet}
           onFocus={startFocus}
@@ -979,6 +1005,7 @@ export default function App() {
             if (lastResult.levelId === "gauntlet") startGauntlet();
             else if (lastResult.levelId === "focus") startFocus();
             else if (lastResult.levelId === "daily") startDaily();
+            else if (lastResult.levelId === "paste" && session?.pasteSource) startPastePractice(session.pasteSource);
             else if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
             else if (lastResult.drill && session?.drillAfterLevel)
               startDrill(

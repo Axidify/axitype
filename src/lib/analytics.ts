@@ -5,7 +5,7 @@ export const ANALYTICS_MAX_EVENTS = 200;
 
 export type DrillStartSource = "stats" | "results" | "hub";
 
-export type RoundLevelId = number | "practice" | "drill" | "gauntlet" | "focus" | "daily";
+export type RoundLevelId = number | "practice" | "paste" | "drill" | "gauntlet" | "focus" | "daily";
 
 type AnalyticsBase = {
   at: number;

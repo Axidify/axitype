@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DRILLS, getDrill } from "../game/drills";
 import { formatDailyLabel, localDateKey, todaysDailyBest } from "../game/daily";
 import { FOCUS_UNLOCK_LEVEL, isFocusUnlocked } from "../game/focus";
@@ -10,13 +11,16 @@ import {
 } from "../game/levels";
 import { formBadgeKey, type ProgressState } from "../lib/storage";
 import { RetrainIntro } from "./RetrainIntro";
+import { PastePracticeModal } from "./PastePracticeModal";
 import styles from "./LevelHub.module.css";
 
 interface LevelHubProps {
   progress: ProgressState;
+  unlockedKeys: string;
   onTrack: (track: Track) => void;
   onPlayLevel: (id: number) => void;
   onPractice: (timedSeconds?: number) => void;
+  onPastePractice: (rawText: string) => void;
   onDaily: () => void;
   onGauntlet: () => void;
   onFocus: () => void;
@@ -44,9 +48,11 @@ function drillGateFor(levelId: number): { kind: DrillKind; afterLevel: number; t
 
 export function LevelHub({
   progress,
+  unlockedKeys,
   onTrack,
   onPlayLevel,
   onPractice,
+  onPastePractice,
   onDaily,
   onGauntlet,
   onFocus,
@@ -59,6 +65,7 @@ export function LevelHub({
   onDismissTrackExplainer,
   onDismissRetrainIntro,
 }: LevelHubProps) {
+  const [pasteOpen, setPasteOpen] = useState(false);
   const demo = progress.coachPrefs.demoMode;
   const continueId = Math.min(progress.unlockedLevel, 12);
   const gauntletOpen = isGauntletUnlocked(progress.unlockedLevel, demo);
@@ -91,6 +98,7 @@ export function LevelHub({
   })();
 
   return (
+    <>
     <section className={styles.hub}>
       {showRetrainIntro && <RetrainIntro onDone={onDismissRetrainIntro} />}
       <header className={styles.hero}>
@@ -102,6 +110,14 @@ export function LevelHub({
           </button>
           <button type="button" className={styles.secondary} onClick={() => onPractice()}>
             Practice
+          </button>
+          <button
+            type="button"
+            className={styles.paste}
+            onClick={() => setPasteOpen(true)}
+            title="Paste your own text — unsupported keys are stripped to your unlocked charset"
+          >
+            Paste text
           </button>
           <button
             type="button"
@@ -303,5 +319,16 @@ export function LevelHub({
         </div>
       </div>
     </section>
+    {pasteOpen && (
+      <PastePracticeModal
+        unlockedKeys={unlockedKeys}
+        onClose={() => setPasteOpen(false)}
+        onStart={(rawText) => {
+          setPasteOpen(false);
+          onPastePractice(rawText);
+        }}
+      />
+    )}
+  </>
   );
 }
