@@ -1,8 +1,8 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.9.0  
-**Status:** Released — practice setup + milestone surfacing.
+**Current version:** v1.9.1  
+**Status:** Released — compact hub menu + drill gate hints.
 
 ---
 
@@ -14,7 +14,14 @@
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v1.9 — Practice + milestones):**
+**Just shipped (v1.9.1 — Hub menu):**
+
+- Compact hub header — brand + Stats/Profile top bar, play card with track + Continue
+- Single-row mode pills (Practice, Paste, Daily, Focus, Gauntlet)
+- Rules & settings + habit drills collapsed into `<details>` (drills auto-open when required)
+- Fix Retrain milestone “next drill” hint when mission is drill-gated
+
+**Previously shipped (v1.9 — Practice + milestones):**
 
 - Hub **Practice…** modal — duration (short/long + timed sprints) and focus (all, weak finger, rows, hands, alternating, one finger)
 - Weak finger uses recent-round misses with lifetime fallback; honest target hint in modal
@@ -128,6 +135,7 @@ AxiType is a browser-based touch typing tutor with:
 | Local profiles | **v1.8** | Hub switcher, per-profile analytics, profile export |
 | Practice setup modal | **v1.9** | Duration + focus chips; weak finger from recent misses |
 | Hub/Results milestone surfacing | **v1.9** | Form badges, star deltas, PB callouts — no trophy catalog |
+| Compact hub menu | **v1.9.1** | Play card, mode pills, collapsible rules/drills |
 
 ---
 
@@ -235,6 +243,7 @@ Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form
 
 | Slice | Contents |
 |-------|----------|
+| **v1.9.1 Hub menu** | Compact header, mode pills, collapsible rules/drills |
 | **v1.9 Practice + milestones** | Practice setup modal, weak-finger hints, Hub/Results milestone surfacing |
 | **v1.8 Local profiles** | UUID store, per-profile analytics, hub switcher, profile export |
 | **v1.7 Paste practice** | Hub paste modal, charset filter, arena restart |
@@ -297,6 +306,6 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story plus **Daily**, **Insights**, **paste practice**, **local profiles**, **practice setup**, and **milestone surfacing** is shipped through **v1.9**.
+AxiType’s core story plus **Daily**, **Insights**, **paste practice**, **local profiles**, **practice setup**, **milestone surfacing**, and a **compact hub** is shipped through **v1.9.1**.
 
 **Next:** Insights-driven copy / gate tweaks when play data justifies them. **Not next:** PWA, achievement catalogs, streaks, or collection walls. Cloud accounts can sync the same `axitype.profile` bundle later.
