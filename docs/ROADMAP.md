@@ -1,20 +1,26 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.6.0  
-**Status:** Released — component tests for PromptLine, Results, and Retrain drill gates.
+**Current version:** v2.7.0  
+**Status:** Released — deeper E2E for Focus speed round and Gauntlet fail path.
 
 ---
 
-## Current focus (v2.7 — candidates)
+## Current focus (v2.8 — candidates)
 
 **Ship next:**
 
-1. Further mode polish or deeper E2E (Focus speed round, Gauntlet fail path)
+1. Further mode polish or lint cleanup
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.6 — component tests):**
+**Just shipped (v2.7 — E2E depth):**
+
+- Focus speed round — hub → accuracy → speed round → tier gate
+- Gauntlet fail path — low-accuracy wave → Results coaching
+- Shared hub helpers: `startFocusFromHub`, `startGauntletFromHub`, `typeArenaPromptWithMisses`
+
+**Previously shipped (v2.6 — component tests):**
 
 - `PromptLine` component tests — aria-label, paint layer, caret/miss states
 - `Results` component tests — mission, Focus, Daily, Gauntlet copy and keyboard shortcuts

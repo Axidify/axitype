@@ -10,11 +10,33 @@ export async function passHomeCheckIfNeeded(page: Page): Promise<void> {
 
 /** Type the current arena prompt to completion. */
 export async function typeArenaPrompt(page: Page): Promise<void> {
+  const prompt = await readArenaPrompt(page);
+  await page.keyboard.type(prompt, { delay: 0 });
+}
+
+/** Type the prompt with a miss before each character to tank accuracy. */
+export async function typeArenaPromptWithMisses(page: Page): Promise<void> {
+  const prompt = await readArenaPrompt(page);
+  for (const ch of prompt) {
+    await page.keyboard.type("q", { delay: 0 });
+    await page.keyboard.type(ch, { delay: 0 });
+  }
+}
+
+async function readArenaPrompt(page: Page): Promise<string> {
   const promptWrap = page.locator('[class*="lineWrap"]').first();
   await expect(promptWrap).toBeVisible({ timeout: 10_000 });
   const prompt = await promptWrap.getAttribute("aria-label");
   expect(prompt).toBeTruthy();
-  await page.keyboard.type(prompt!, { delay: 0 });
+  return prompt!;
+}
+
+export async function startFocusFromHub(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /^Focus/ }).click();
+}
+
+export async function startGauntletFromHub(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /^Gauntlet/ }).click();
 }
 
 export async function startDailyFromHub(page: Page): Promise<void> {
