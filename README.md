@@ -28,7 +28,7 @@ If the page is blocked with “host is not allowed”, restart dev after pulling
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** Focus/Gauntlet UX polish (PWA / achievements deferred).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** Further mode polish / E2E expansion (PWA / achievements deferred).
 
 ## What’s included
 

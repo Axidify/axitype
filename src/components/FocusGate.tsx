@@ -40,21 +40,26 @@ export function FocusGate({
   const kicker = gate === "accuracyToSpeed" ? "Accuracy cleared" : "Speed target hit";
   const headline =
     gate === "accuracyToSpeed"
-      ? `Ready for speed on ${run.plan.fingerLabel}?`
+      ? `Speed round next — hit ${run.targetWpm} WPM with zero zone misses`
       : canRaiseTier
         ? `Raise the bar to ${nextTarget} WPM?`
-        : "Session complete at top tier";
+        : "All 3 speed tiers cleared";
 
   const detail =
     gate === "accuracyToSpeed"
-      ? `${run.plan.reason} You finished with zero focus-zone misses.`
+      ? run.plan.reason
       : `You hit ${lastWpm} WPM at ${lastAccuracy}% accuracy with ${lastFocusMisses} focus misses.`;
+
+  const phaseNote =
+    gate === "accuracyToSpeed"
+      ? "Speed rounds use longer prompts and raise the WPM bar each tier."
+      : null;
 
   const progressLabel =
     gate === "accuracyToSpeed"
-      ? `Progress to speed · ${run.targetWpm} WPM`
+      ? `Start speed · ${run.targetWpm} WPM target`
       : canRaiseTier
-        ? `Increase difficulty · ${nextTarget} WPM`
+        ? `Next tier · ${nextTarget} WPM`
         : "Finish session";
 
   const practiceLabel =
@@ -73,6 +78,7 @@ export function FocusGate({
         <p className={styles.kicker}>{kicker}</p>
         <h2>{headline}</h2>
         <p className={styles.detail}>{detail}</p>
+        {phaseNote && <p className={styles.phaseNote}>{phaseNote}</p>}
         <p className={styles.stats}>
           Last round · {lastAccuracy}% accuracy · {lastWpm} WPM · {lastFocusMisses} focus misses
         </p>

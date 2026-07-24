@@ -8,6 +8,7 @@ import { buildDrillPrompt, getDrill } from "../game/drills";
 import { buildDrillMilestone, buildMissionMilestone, type DrillMilestone, type MissionMilestone } from "../game/milestones";
 import {
   buildGauntletPrompt,
+  gauntletAccuracyForWave,
   gauntletWavePassed,
   getGauntletWave,
   wavesClearedAfterRun,
@@ -18,6 +19,7 @@ import {
   buildFocusPrompt,
   countFocusMisses,
   focusCoachGoal,
+  focusFailureHint,
   focusHubPreview,
   focusRoundPassed,
   focusRoundTitle,
@@ -134,6 +136,7 @@ interface FocusSummary {
   focusTitle: string;
   fingerLabel: string;
   zone: string;
+  totalAttempts: number;
   lastAccuracy: number;
   lastWpm: number;
   targetWpm: number;
@@ -407,6 +410,7 @@ export default function App() {
       speedTier: 1,
       accuracyRounds: 0,
       speedRounds: 0,
+      attempts: 1,
     });
   };
 
@@ -426,6 +430,7 @@ export default function App() {
       focusTitle: run.plan.title,
       fingerLabel: run.plan.fingerLabel,
       zone: run.plan.zone,
+      totalAttempts: run.attempts,
       lastAccuracy: snapshot.accuracy,
       lastWpm: snapshot.wpm,
       targetWpm: run.targetWpm,
@@ -467,6 +472,8 @@ export default function App() {
         round: 1,
         speedRounds: 0,
         speedTier: 1,
+        attempts: run.attempts + 1,
+        retryHint: undefined,
         targetWpm: focusSpeedTarget(progress.unlockedLevel, progress.track, recentWpm, 1),
       });
       return;
@@ -483,6 +490,8 @@ export default function App() {
       phase: "speed",
       round: 1,
       speedTier: nextTier,
+      attempts: run.attempts + 1,
+      retryHint: undefined,
       targetWpm: focusSpeedTarget(progress.unlockedLevel, progress.track, recentWpm, nextTier),
     });
   };
@@ -497,6 +506,8 @@ export default function App() {
         ...run,
         phase: "accuracy",
         round: 1,
+        attempts: run.attempts + 1,
+        retryHint: undefined,
       });
       return;
     }
@@ -505,6 +516,8 @@ export default function App() {
       ...run,
       phase: "speed",
       round: 1,
+      attempts: run.attempts + 1,
+      retryHint: undefined,
     });
   };
 
@@ -727,7 +740,11 @@ export default function App() {
       return;
     }
     if (session.levelId === "focus" && session.focusRun) {
-      startFocusRound({ ...session.focusRun });
+      startFocusRound({
+        ...session.focusRun,
+        attempts: session.focusRun.attempts + 1,
+        retryHint: undefined,
+      });
       return;
     }
     if (session.levelId === "daily") {
@@ -874,9 +891,19 @@ export default function App() {
         return;
       }
 
+      const hint = focusFailureHint(
+        completed,
+        snapshot.wpm,
+        keyEvents,
+        run.plan,
+        run.phase,
+        run.targetWpm,
+      );
       startFocusRound({
         ...run,
         round: run.round + 1,
+        attempts: run.attempts + 1,
+        retryHint: hint || undefined,
       });
       return;
     }
@@ -1088,8 +1115,14 @@ export default function App() {
           timedSeconds={session.timedSeconds}
           gauntletWave={session.gauntletRun?.wave}
           gauntletScore={session.gauntletRun?.totalScore}
+          gauntletAccuracyGate={
+            session.levelId === "gauntlet" && session.gauntletRun
+              ? gauntletAccuracyForWave(session.gauntletRun.wave, progress.track)
+              : undefined
+          }
           focusGoal={session.focusRun ? focusCoachGoal(session.focusRun) : undefined}
           focusReason={session.focusRun?.plan.reason}
+          focusRetryHint={session.focusRun?.retryHint}
           demoMode={progress.coachPrefs.demoMode}
           onFinished={applyResult}
           onExit={exitArena}

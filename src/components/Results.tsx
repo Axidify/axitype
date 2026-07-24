@@ -48,6 +48,7 @@ interface ResultsProps {
     focusTitle: string;
     fingerLabel: string;
     zone: string;
+    totalAttempts: number;
     lastAccuracy: number;
     lastWpm: number;
     targetWpm: number;
@@ -176,13 +177,16 @@ export function Results({
   const displayStars = breakdown?.stars ?? stars;
   const unlockedEnough = displayStars >= 2;
   const isDrill = levelId === "drill" && drillSummary !== null;
+  const displayTitle =
+    isFocus && focusSummary ? `Focus · ${focusSummary.focusTitle}` : title;
+
   const kicker =
     isDaily
       ? dailySummary.isNewBest
         ? "New daily best"
         : "Daily challenge"
       : isFocus
-      ? "Zone cleared"
+      ? "Rehab complete"
       : isGauntlet
       ? gauntletSummary.newBest
         ? "New best run"
@@ -217,6 +221,10 @@ export function Results({
     }
     if (isFocus && focusSummary) {
       if (demoMode) return "Demo session — progress not saved";
+      const segments = focusSummary.accuracyRounds + focusSummary.speedRounds;
+      if (focusSummary.totalAttempts > segments) {
+        return `Cleared after ${focusSummary.totalAttempts} rounds — ${focusSummary.fingerLabel} zone at ${focusSummary.lastAccuracy}% then ${focusSummary.lastWpm} WPM (target ${focusSummary.targetWpm}).`;
+      }
       return `Nailed ${focusSummary.fingerLabel} at ${focusSummary.lastAccuracy}% accuracy, then hit ${focusSummary.lastWpm} WPM (target ${focusSummary.targetWpm}).`;
     }
     if (isGauntlet && gauntletSummary) {
@@ -284,7 +292,7 @@ export function Results({
     <section className={styles.wrap}>
       <header className={styles.hero}>
         <p className={styles.kicker}>{kicker}</p>
-        <h1>{title}</h1>
+        <h1>{displayTitle}</h1>
         {isGauntlet && gauntletSummary ? (
           <p className={styles.gauntletHero}>
             <strong>{gauntletSummary.wavesCleared}</strong> waves cleared ·{" "}

@@ -56,6 +56,10 @@ export interface FocusRunState {
   speedTier: number;
   accuracyRounds: number;
   speedRounds: number;
+  /** Arena entries this session (retries + gate transitions). */
+  attempts: number;
+  /** Shown once before the player starts the next retry round. */
+  retryHint?: string;
 }
 
 export function isFocusUnlocked(unlockedLevel: number, demoMode: boolean): boolean {
@@ -433,7 +437,12 @@ export function focusHubPreview(
   missCounts: Record<string, number>,
   keyStats: KeyStatMap,
   keys: string,
-): string {
+): { label: string; tooltip: string } {
   const profile = analyzeWeakness(missCounts, keyStats, keys);
-  return profile.fingerLabel;
+  const reason =
+    profile.reason.length > 90 ? `${profile.reason.slice(0, 87)}…` : profile.reason;
+  return {
+    label: profile.fingerLabel,
+    tooltip: `Focus: ${profile.fingerLabel} — ${reason} Clear accuracy, then speed tiers.`,
+  };
 }

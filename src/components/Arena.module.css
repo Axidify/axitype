@@ -65,6 +65,14 @@
   line-height: 1.4;
 }
 
+.focusRetry {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--warn, #b45309) 80%, var(--ink-muted));
+  font-weight: 600;
+}
+
 .back,
 .restart,
 .peek {
