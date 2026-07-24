@@ -58,8 +58,32 @@ interface LevelHubProps {
   onDismissRetrainIntro: () => void;
 }
 
-function starsLabel(n: number): string {
-  return "★".repeat(n) + "☆".repeat(Math.max(0, 3 - n));
+function Stars({ n }: { n: number }) {
+  const filled = Math.max(0, Math.min(3, n));
+  return (
+    <span className={styles.stars} aria-label={`${filled} of 3 stars`}>
+      <span className={styles.starsFilled}>{"★".repeat(filled)}</span>
+      <span className={styles.starsEmpty}>{"☆".repeat(3 - filled)}</span>
+    </span>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      className={styles.lockIcon}
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fill="currentColor"
+        d="M4.5 7V5.5a3.5 3.5 0 1 1 7 0V7h.75A1.75 1.75 0 0 1 14 8.75v4.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-4.5A1.75 1.75 0 0 1 3.75 7H4.5Zm1.25 0h4.5V5.5a2.25 2.25 0 1 0-4.5 0V7Z"
+      />
+    </svg>
+  );
 }
 
 export function LevelHub({
@@ -156,59 +180,62 @@ export function LevelHub({
           )}
         </div>
 
-        <div className={styles.modes}>
-          <button type="button" className={styles.modeChip} onClick={() => setPracticeOpen(true)}>
-            Practice
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeChip} ${styles.paste}`}
-            onClick={() => setPasteOpen(true)}
-            title="Paste your own text"
-          >
-            Paste
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeChip} ${styles.daily}`}
-            onClick={onDaily}
-            title={
-              dailyBest
-                ? `Today's best: ${hubDailyBestLabel(dailyBest)}`
-                : "One shared prompt for today"
-            }
-          >
-            Daily
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeChip} ${styles.focus}`}
-            disabled={!focusOpen}
-            onClick={onFocus}
-            title={
-              focusOpen
-                ? focusPreview?.tooltip ?? "Accuracy → speed rehab on your weakest zone"
-                : `Unlocks at Mission ${FOCUS_UNLOCK_LEVEL} — accuracy then speed tiers`
-            }
-          >
-            Focus{focusPreview ? ` · ${focusPreview.label}` : ""}
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeChip} ${styles.gauntlet}`}
-            disabled={!gauntletOpen}
-            onClick={onGauntlet}
-            title={
-              progress.gauntletBest
-                ? `Best: ${hubGauntletBestLabel(progress.gauntletBest)}`
-                : gauntletOpen
-                  ? "Each wave needs minimum accuracy to advance — miss the bar and the run ends"
-                  : `Unlocks at Mission ${GAUNTLET_UNLOCK_LEVEL}`
-            }
-          >
-            Gauntlet
-            {progress.gauntletBest ? ` · ${progress.gauntletBest.wavesCleared}` : ""}
-          </button>
+        <div className={styles.modesBlock}>
+          <p className={styles.modesLabel}>Practice modes</p>
+          <div className={styles.modes}>
+            <button type="button" className={styles.modeChip} onClick={() => setPracticeOpen(true)}>
+              Practice
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeChip} ${styles.paste}`}
+              onClick={() => setPasteOpen(true)}
+              title="Paste your own text"
+            >
+              Paste
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeChip} ${styles.daily}`}
+              onClick={onDaily}
+              title={
+                dailyBest
+                  ? `Today's best: ${hubDailyBestLabel(dailyBest)}`
+                  : "One shared prompt for today"
+              }
+            >
+              Daily
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeChip} ${styles.focus}`}
+              disabled={!focusOpen}
+              onClick={onFocus}
+              title={
+                focusOpen
+                  ? focusPreview?.tooltip ?? "Accuracy → speed rehab on your weakest zone"
+                  : `Unlocks at Mission ${FOCUS_UNLOCK_LEVEL} — accuracy then speed tiers`
+              }
+            >
+              Focus{focusPreview ? ` · ${focusPreview.label}` : ""}
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeChip} ${styles.gauntlet}`}
+              disabled={!gauntletOpen}
+              onClick={onGauntlet}
+              title={
+                progress.gauntletBest
+                  ? `Best: ${hubGauntletBestLabel(progress.gauntletBest)}`
+                  : gauntletOpen
+                    ? "Each wave needs minimum accuracy to advance — miss the bar and the run ends"
+                    : `Unlocks at Mission ${GAUNTLET_UNLOCK_LEVEL}`
+              }
+            >
+              Gauntlet
+              {progress.gauntletBest ? ` · ${progress.gauntletBest.wavesCleared}` : ""}
+            </button>
+          </div>
         </div>
 
         {hubCoaching && (
@@ -297,20 +324,28 @@ export function LevelHub({
             progressLocked &&
             !drillLocked &&
             level.id === progress.unlockedLevel + 1;
+          const isCurrent = !locked && level.id === continueId;
           return (
             <li key={level.id}>
               <button
                 type="button"
-                className={`${styles.node} ${locked ? styles.locked : ""}`}
+                className={`${styles.node} ${locked ? styles.locked : ""} ${isCurrent ? styles.current : ""}`}
                 disabled={locked}
                 onClick={() => onPlayLevel(level.id)}
+                aria-current={isCurrent ? "step" : undefined}
               >
                 <span className={styles.num}>{level.id}</span>
                 <span className={styles.meta}>
                   <span className={styles.titleRow}>
                     <strong>{level.title}</strong>
-                    <span className={styles.stars}>{starsLabel(stars)}</span>
-                    {badge && <span className={styles.badge}>Form</span>}
+                    {locked && <LockIcon />}
+                    {isCurrent && <span className={styles.currentBadge}>Current</span>}
+                    <Stars n={stars} />
+                    {badge && (
+                      <span className={styles.badge} title="Form drill cleared">
+                        Form ✓
+                      </span>
+                    )}
                   </span>
                   {showDrillHint && drillGate && (
                     <span className={styles.lockHint}>

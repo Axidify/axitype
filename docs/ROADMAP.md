@@ -1,8 +1,8 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.9.0  
-**Status:** Released — Focus gate polish and full-session E2E.
+**Current version:** v2.10.0  
+**Status:** Released — LevelHub hierarchy polish from playtest feedback.
 
 ---
 
@@ -14,7 +14,14 @@
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.9 — Focus polish):**
+**Just shipped (v2.10 — LevelHub polish):**
+
+- Current mission highlight (accent border + Current badge)
+- Collapse chevrons on Rules & settings / Habit drills
+- Colored stars, lock icons on locked rows, Form ✓ tooltip
+- Practice modes label to separate chips from Learn/Retrain
+
+**Previously shipped (v2.9 — Focus polish):**
 
 - FocusGate Space/Escape shortcuts + kbd hint on primary CTA
 - Speed tier progress copy (`Speed tier N of 3 cleared`)
