@@ -1,20 +1,26 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.2.0  
-**Status:** Released — Focus/Gauntlet in-run coaching and gate copy polish.
+**Current version:** v2.3.0  
+**Status:** Released — E2E smoke covers Focus and Gauntlet happy paths.
 
 ---
 
-## Current focus (v2.3 — candidates)
+## Current focus (v2.4 — candidates)
 
 **Ship next:**
 
-1. More E2E coverage (Focus/Gauntlet smoke) or further mode polish
+1. Further mode polish or CI wiring for E2E
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.2 — Focus/Gauntlet UX):**
+**Just shipped (v2.3 — E2E expansion):**
+
+- Focus smoke — hub → accuracy round → FocusGate speed transition
+- Gauntlet smoke — hub → wave 1 clear → wave 2 coach strip
+- Shared arena helpers split (`passHomeCheckIfNeeded`, `typeArenaPrompt`)
+
+**Previously shipped (v2.2 — Focus/Gauntlet UX):**
 
 - Focus failure hints surface before auto-retry (was silent)
 - Gauntlet Arena shows per-wave accuracy gate (+ timer when timed)
