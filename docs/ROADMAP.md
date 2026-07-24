@@ -1,20 +1,27 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.4.0  
-**Status:** Released — GitHub Actions CI (lint, unit, build, E2E).
+**Current version:** v2.5.0  
+**Status:** Released — full hub mode E2E smoke (7 specs).
 
 ---
 
-## Current focus (v2.5 — candidates)
+## Current focus (v2.6 — candidates)
 
 **Ship next:**
 
-1. Further mode polish or expand E2E coverage
+1. Further mode polish or component-level tests
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.4 — CI):**
+**Just shipped (v2.5 — E2E full hub):**
+
+- Daily smoke — hub → challenge → Results
+- Practice smoke — hub → setup modal → Results
+- Paste smoke — hub → paste modal → Results
+- Hub navigation helpers for modal flows
+
+**Previously shipped (v2.4 — CI):**
 
 - GitHub Actions workflow on `master` push/PR — lint, Vitest, build, Playwright smoke
 - `npm run ci` local parity script (lint → unit → build → e2e)
