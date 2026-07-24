@@ -1,20 +1,26 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.0.0  
-**Status:** Released — analytics-informed coaching across hub, practice, focus, and results.
+**Current version:** v2.1.0  
+**Status:** Released — Playwright E2E smoke for Learn and Retrain happy paths.
 
 ---
 
-## Current focus (v2.1 — candidates)
+## Current focus (v2.2 — candidates)
 
 **Ship next:**
 
-1. E2E smoke (Playwright) or Focus/Gauntlet UX polish
+1. Focus/Gauntlet UX polish from playtesting
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.0 — Insights coaching):**
+**Just shipped (v2.1 — E2E smoke):**
+
+- Playwright config with dev-server bootstrap (`npm run test:e2e`)
+- Demo-seeded Learn track: hub → Continue mission → type prompt → Results
+- Demo-seeded Retrain track: same happy path after track switch
+
+**Previously shipped (v2.0 — Insights coaching):**
 
 - Practice prompt length eases when restart rate climbs (like Focus/Daily)
 - Hub surfaces top warn-style insight from play analytics (non-demo)
