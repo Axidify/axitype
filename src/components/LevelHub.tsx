@@ -10,7 +10,13 @@ import {
   type Track,
 } from "../game/levels";
 import type { ProfileRecord } from "../lib/profiles";
-import { formBadgeKey, type ProgressState } from "../lib/storage";
+import type { ProgressState } from "../lib/storage";
+import { formBadgeKey } from "../lib/storage";
+import {
+  drillGateFor,
+  highlightedBlockingDrill,
+  stageLocked,
+} from "../game/progression";
 import type { PracticeConfig } from "../game/practiceSetup";
 import { practiceMissCounts } from "../game/practiceSetup";
 import {
@@ -56,14 +62,6 @@ function starsLabel(n: number): string {
   return "★".repeat(n) + "☆".repeat(Math.max(0, 3 - n));
 }
 
-function drillGateFor(levelId: number): { kind: DrillKind; afterLevel: number; title: string } | null {
-  if (levelId <= 1) return null;
-  const prev = LEVELS[levelId - 2];
-  if (!prev.unlockDrill) return null;
-  const drill = getDrill(prev.unlockDrill);
-  return { kind: prev.unlockDrill, afterLevel: prev.id, title: drill.title };
-}
-
 export function LevelHub({
   progress,
   unlockedKeys,
@@ -105,25 +103,7 @@ export function LevelHub({
   const showRetrainIntro =
     progress.track === "retrain" && !progress.coachPrefs.seenRetrainIntro;
 
-  const stageLocked = (levelId: number): boolean => {
-    if (demo) return false;
-    if (progress.track !== "retrain") return false;
-    const gateInfo = drillGateFor(levelId);
-    if (!gateInfo) return false;
-    return !progress.formBadges[formBadgeKey(gateInfo.afterLevel, gateInfo.kind)];
-  };
-
-  // Highlight the drill blocking the soonest drill-gated mission the player can unlock.
-  const highlightedDrill = (() => {
-    if (demo || progress.track !== "retrain") return null;
-    for (const level of LEVELS) {
-      if (!stageLocked(level.id)) continue;
-      const gateInfo = drillGateFor(level.id);
-      if (!gateInfo) continue;
-      if (progress.unlockedLevel >= gateInfo.afterLevel) return gateInfo.kind;
-    }
-    return null;
-  })();
+  const highlightedDrill = highlightedBlockingDrill(progress, demo);
 
   return (
     <>
@@ -301,7 +281,7 @@ export function LevelHub({
       <ol className={styles.lane}>
         {LEVELS.map((level) => {
           const progressLocked = !demo && level.id > progress.unlockedLevel;
-          const drillLocked = stageLocked(level.id);
+          const drillLocked = stageLocked(progress, level.id, demo);
           const locked = progressLocked || drillLocked;
           const stars = progress.levelStars[level.id] ?? 0;
           const badge =
