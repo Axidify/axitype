@@ -33,8 +33,10 @@ interface ArenaProps {
   timedSeconds?: number;
   gauntletWave?: number;
   gauntletScore?: number;
+  gauntletAccuracyGate?: number;
   focusGoal?: string;
   focusReason?: string;
+  focusRetryHint?: string;
   demoMode?: boolean;
   onFinished: (result: ArenaResult) => void;
   onExit: () => void;
@@ -53,8 +55,10 @@ export function Arena({
   timedSeconds,
   gauntletWave,
   gauntletScore,
+  gauntletAccuracyGate,
   focusGoal,
   focusReason,
+  focusRetryHint,
   demoMode,
   onFinished,
   onExit,
@@ -279,8 +283,21 @@ export function Arena({
         <div className={styles.focusCoach}>
           <p className={styles.focusGoal}>
             <strong>Goal:</strong> {focusGoal}
+            {focusGoal.includes("zone") ? " (only zone keys count)" : ""}
           </p>
           {focusReason && <p className={styles.focusReason}>{focusReason}</p>}
+          {focusRetryHint && !snap.started && (
+            <p className={styles.focusRetry}>{focusRetryHint}</p>
+          )}
+        </div>
+      )}
+
+      {levelId === "gauntlet" && gauntletWave != null && gauntletAccuracyGate != null && (
+        <div className={styles.focusCoach}>
+          <p className={styles.focusGoal}>
+            <strong>Clear wave {gauntletWave}:</strong> {gauntletAccuracyGate}%+ accuracy
+            {timedSeconds ? ` · ${timedSeconds}s` : ""}
+          </p>
         </div>
       )}
 

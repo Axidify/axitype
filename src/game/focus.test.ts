@@ -5,6 +5,7 @@ import {
   buildFocusPrompt,
   countFocusMisses,
   focusFailureHint,
+  focusHubPreview,
   focusPromptComplexity,
   focusRoundPassed,
   focusSpeedTarget,
@@ -91,6 +92,13 @@ describe("focus mode", () => {
     const speed = focusPromptComplexity("speed", 3);
     expect(speed.maxWordSyllables).toBeGreaterThan(accuracy.maxWordSyllables);
     expect(speed.preferAlternating).toBe(true);
+  });
+
+  it("builds hub preview with label and tooltip", () => {
+    const preview = focusHubPreview({ f: 5, j: 3 }, {}, "asdfjkl;qwerty ");
+    expect(preview.label).toBeTruthy();
+    expect(preview.tooltip).toContain("Focus:");
+    expect(preview.tooltip).toContain("speed tiers");
   });
 
   it("builds syllable-shaped focus prompts", () => {

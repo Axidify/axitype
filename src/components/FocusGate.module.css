@@ -72,6 +72,13 @@
   color: color-mix(in srgb, var(--accent) 70%, var(--ink-muted));
 }
 
+.phaseNote {
+  margin: -0.25rem 0 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
 .actions {
   display: flex;
   flex-direction: column;

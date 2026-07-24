@@ -41,7 +41,7 @@ interface LevelHubProps {
   onDaily: () => void;
   onGauntlet: () => void;
   onFocus: () => void;
-  focusPreview?: string | null;
+  focusPreview?: { label: string; tooltip: string } | null;
   hubCoaching?: { title: string; detail: string } | null;
   onStats: () => void;
   onDrill: (kind: DrillKind, afterLevel: number) => void;
@@ -207,13 +207,11 @@ export function LevelHub({
             onClick={onFocus}
             title={
               focusOpen
-                ? focusPreview
-                  ? `Rehab: ${focusPreview}`
-                  : "Weak-zone rehab"
-                : `Unlocks at Mission ${FOCUS_UNLOCK_LEVEL}`
+                ? focusPreview?.tooltip ?? "Accuracy → speed rehab on your weakest zone"
+                : `Unlocks at Mission ${FOCUS_UNLOCK_LEVEL} — accuracy then speed tiers`
             }
           >
-            Focus{focusPreview ? ` · ${focusPreview}` : ""}
+            Focus{focusPreview ? ` · ${focusPreview.label}` : ""}
           </button>
           <button
             type="button"
@@ -224,7 +222,7 @@ export function LevelHub({
               progress.gauntletBest
                 ? `Best: ${hubGauntletBestLabel(progress.gauntletBest)}`
                 : gauntletOpen
-                  ? "Endless waves"
+                  ? "Each wave needs minimum accuracy to advance — miss the bar and the run ends"
                   : `Unlocks at Mission ${GAUNTLET_UNLOCK_LEVEL}`
             }
           >

@@ -1,20 +1,28 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.1.0  
-**Status:** Released — Playwright E2E smoke for Learn and Retrain happy paths.
+**Current version:** v2.2.0  
+**Status:** Released — Focus/Gauntlet in-run coaching and gate copy polish.
 
 ---
 
-## Current focus (v2.2 — candidates)
+## Current focus (v2.3 — candidates)
 
 **Ship next:**
 
-1. Focus/Gauntlet UX polish from playtesting
+1. More E2E coverage (Focus/Gauntlet smoke) or further mode polish
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.1 — E2E smoke):**
+**Just shipped (v2.2 — Focus/Gauntlet UX):**
+
+- Focus failure hints surface before auto-retry (was silent)
+- Gauntlet Arena shows per-wave accuracy gate (+ timer when timed)
+- Focus hub tooltip includes rehab reason and phase structure
+- FocusGate CTAs clarify speed transition and tier progression
+- Focus Results use session title, honest retry count, “Rehab complete” kicker
+
+**Previously shipped (v2.1 — E2E smoke):**
 
 - Playwright config with dev-server bootstrap (`npm run test:e2e`)
 - Demo-seeded Learn track: hub → Continue mission → type prompt → Results
