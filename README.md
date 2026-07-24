@@ -29,7 +29,7 @@ If the page is blocked with “host is not allowed”, restart dev after pulling
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **v1.x + v2.x plans are complete** at v2.10.0; **v3.0** is insights/playtest polish only (PWA / achievements deferred).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **v1.x + v2.x plans are complete** at v2.10.1; **v3.0** is insights/playtest polish only (PWA / achievements deferred).
 
 ## What’s included
 

@@ -1,8 +1,8 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.10.0  
-**Status:** Released — LevelHub hierarchy polish from playtest feedback.
+**Current version:** v2.10.1  
+**Status:** Released — LevelHub hover/chip contrast follow-up.
 
 ---
 
@@ -14,7 +14,13 @@
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.10 — LevelHub polish):**
+**Just shipped (v2.10.1 — LevelHub follow-up):**
+
+- Completed mission hover no longer mimics the current-row accent border
+- Practice modes grouped panel with softer chip styling
+- Darker lock icons for legibility on locked rows
+
+**Previously shipped (v2.10 — LevelHub polish):**
 
 - Current mission highlight (accent border + Current badge)
 - Collapse chevrons on Rules & settings / Habit drills
@@ -213,7 +219,7 @@ AxiType is a browser-based touch typing tutor with:
 | Focus/Gauntlet UX polish | **v2.2** | Failure hints, wave gate strip, gate copy, Results recap |
 | Component + progression tests | **v2.6** | `PromptLine`, `Results`, `progression.ts` |
 | Lint + Focus gate polish | **v2.8–v2.9** | Zero-warning oxlint; FocusGate shortcuts, tier copy, full-session E2E |
-| LevelHub hierarchy polish | **v2.10** | Current mission highlight, chevrons, colored stars, locks, Form tip |
+| LevelHub hierarchy polish | **v2.10–v2.10.1** | Current mission highlight, chevrons, stars, locks, Form tip; hover/chip contrast fix |
 
 ---
 
@@ -292,7 +298,7 @@ Surfaced existing milestones in Hub/Results — Form badges, star deltas, missio
 | Item | Status | Notes |
 |------|--------|-------|
 | Focus/Gauntlet UX polish | ✅ **v2.2, v2.9** | Failure hints, wave strip, gate copy, shortcuts, tier progress |
-| LevelHub hierarchy polish | ✅ **v2.10** | Current mission, chevrons, stars, locks, Form tip, Practice modes label |
+| LevelHub hierarchy polish | ✅ **v2.10–v2.10.1** | Current mission, chevrons, stars, locks, Form tip; hover no longer mimics current |
 | E2E smoke (Playwright) | ✅ **v2.1–v2.7** | 10 specs — all hub modes + Focus full session + Gauntlet fail |
 | GitHub Actions CI | ✅ **v2.4** | `npm run ci` local parity |
 | Component / progression tests | ✅ **v2.6** | `PromptLine`, `Results`, `stageLocked` |
@@ -341,6 +347,7 @@ Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form
 
 | Slice | Contents |
 |-------|----------|
+| **v2.10.1 LevelHub follow-up** | Neutral hover on completed rows, softer practice chips, darker lock icons |
 | **v2.10 LevelHub polish** | Current mission highlight, collapse chevrons, colored stars, lock icons, Form tip, Practice modes label |
 | **v2.9 Focus gate** | Shortcuts, tier copy, full-session E2E, FocusGate tests |
 | **v2.8 Lint** | Zero-warning oxlint pass |
@@ -424,7 +431,7 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 AxiType’s **v1.x product plan is complete** through **v1.9.1** (campaign, all hub modes, profiles, Insights, milestones, compact hub).
 
-The **v2.x quality plan is complete** through **v2.10.0** (CI, 153 unit tests, 10 E2E specs, component tests, lint clean, Focus + LevelHub polish).
+The **v2.x quality plan is complete** through **v2.10.1** (CI, 153 unit tests, 10 E2E specs, component tests, lint clean, Focus + LevelHub polish).
 
 **Next (v3.0):** insights-driven copy / gate tweaks when play data warrants, plus ad-hoc playtest polish — no fixed feature backlog.
 
