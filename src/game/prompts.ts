@@ -143,7 +143,7 @@ export function generateOneFingerDrill(
 ): string {
   // Thumb only owns space — not a useful one-finger rehab zone.
   const target: FingerId = finger === "LT" || finger === "RT" ? "LI" : finger;
-  const keys = keysForFinger(target).filter((k) => /[a-z;,\.']/.test(k));
+  const keys = keysForFinger(target).filter((k) => /[a-z;,.']/.test(k));
   const pool = keys.length ? keys : ["f", "g", "r", "t"];
   const boost = focusBoost && pool.includes(focusBoost) ? focusBoost : undefined;
   return generateOneFingerGroups(pool, targetLength, stats, boost);

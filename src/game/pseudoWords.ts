@@ -93,7 +93,7 @@ export function generateOneFingerGroups(
   stats?: KeyStatMap,
   focusBoost?: string,
 ): string {
-  const pool = fingerKeys.filter((k) => /[a-z;,\.']/.test(k));
+  const pool = fingerKeys.filter((k) => /[a-z;,.']/.test(k));
   if (pool.length === 0) return "fff fff rrr";
   const boost = focusBoost && pool.includes(focusBoost) ? focusBoost : undefined;
   const key = pickWeighted(pool, stats, boost);

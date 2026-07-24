@@ -224,7 +224,7 @@ export default function App() {
 
   const patchProgress = useCallback((fn: (p: ProgressState) => ProgressState) => {
     setProgress((p) => fn(p));
-  }, []);
+  }, [setProgress]);
 
   const analyticsBase = () => ({
     track: progress.track,
