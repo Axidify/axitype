@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DRILLS, getDrill } from "../game/drills";
-import { formatDailyLabel, localDateKey, todaysDailyBest } from "../game/daily";
+import { localDateKey, todaysDailyBest } from "../game/daily";
 import { FOCUS_UNLOCK_LEVEL, isFocusUnlocked } from "../game/focus";
 import { GAUNTLET_UNLOCK_LEVEL, isGauntletUnlocked } from "../game/gauntlet";
 import {
@@ -128,148 +128,167 @@ export function LevelHub({
     <section className={styles.hub}>
       {showRetrainIntro && <RetrainIntro onDone={onDismissRetrainIntro} />}
       <header className={styles.hero}>
-        <p className={styles.brand}>AxiType</p>
-        <p className={styles.tag}>Train touch typing. Chase the combo.</p>
-        <ProfileSwitcher
-          profiles={profiles}
-          activeProfileId={activeProfileId}
-          onSwitch={onSwitchProfile}
-          onCreate={onCreateProfile}
-          onRename={onRenameProfile}
-          onDelete={onDeleteProfile}
-        />
-        <div className={styles.actions}>
+        <div className={styles.topBar}>
+          <p className={styles.brand}>AxiType</p>
+          <div className={styles.topBarRight}>
+            <button type="button" className={styles.ghost} onClick={onStats}>
+              Stats
+            </button>
+            <ProfileSwitcher
+              className={styles.profileInline}
+              profiles={profiles}
+              activeProfileId={activeProfileId}
+              onSwitch={onSwitchProfile}
+              onCreate={onCreateProfile}
+              onRename={onRenameProfile}
+              onDelete={onDeleteProfile}
+            />
+          </div>
+        </div>
+
+        <div className={styles.playCard}>
+          <div className={styles.tracks}>
+            <button
+              type="button"
+              className={progress.track === "learn" ? styles.trackOn : styles.track}
+              onClick={() => onTrack("learn")}
+            >
+              Learn
+            </button>
+            <button
+              type="button"
+              className={progress.track === "retrain" ? styles.trackOn : styles.track}
+              onClick={() => onTrack("retrain")}
+            >
+              Retrain
+            </button>
+          </div>
           <button type="button" className={styles.primary} onClick={() => onPlayLevel(continueId)}>
             Continue · Mission {continueId}
           </button>
-          <button type="button" className={styles.secondary} onClick={() => setPracticeOpen(true)}>
-            Practice…
+          {milestoneLine && <p className={styles.milestones}>{milestoneLine}</p>}
+          {highlightedDrill && (
+            <p className={styles.requiredDrill}>
+              Next: complete <strong>{getDrill(highlightedDrill).title}</strong> drill below
+            </p>
+          )}
+        </div>
+
+        <div className={styles.modes}>
+          <button type="button" className={styles.modeChip} onClick={() => setPracticeOpen(true)}>
+            Practice
           </button>
           <button
             type="button"
-            className={styles.paste}
+            className={`${styles.modeChip} ${styles.paste}`}
             onClick={() => setPasteOpen(true)}
-            title="Paste your own text — unsupported keys are stripped to your unlocked charset"
+            title="Paste your own text"
           >
-            Paste text
+            Paste
           </button>
           <button
             type="button"
-            className={styles.daily}
+            className={`${styles.modeChip} ${styles.daily}`}
             onClick={onDaily}
-            title="One shared prompt for today — chase your local best"
+            title={
+              dailyBest
+                ? `Today's best: ${hubDailyBestLabel(dailyBest)}`
+                : "One shared prompt for today"
+            }
           >
-            Daily · {formatDailyLabel(dateKey)}
-            {dailyBest ? ` · best ${hubDailyBestLabel(dailyBest)}` : ""}
+            Daily
           </button>
           <button
             type="button"
-            className={styles.focus}
+            className={`${styles.modeChip} ${styles.focus}`}
             disabled={!focusOpen}
             onClick={onFocus}
             title={
               focusOpen
-                ? "Reads your stats, drills weak fingers/zones to 100% accuracy, then builds speed"
+                ? focusPreview
+                  ? `Rehab: ${focusPreview}`
+                  : "Weak-zone rehab"
                 : `Unlocks at Mission ${FOCUS_UNLOCK_LEVEL}`
             }
           >
-            Focus
-            {focusPreview ? ` · ${focusPreview}` : ""}
+            Focus{focusPreview ? ` · ${focusPreview}` : ""}
           </button>
           <button
             type="button"
-            className={styles.gauntlet}
+            className={`${styles.modeChip} ${styles.gauntlet}`}
             disabled={!gauntletOpen}
             onClick={onGauntlet}
             title={
-              gauntletOpen
-                ? "Endless waves — survive as long as you can"
-                : `Unlocks at Mission ${GAUNTLET_UNLOCK_LEVEL}`
+              progress.gauntletBest
+                ? `Best: ${hubGauntletBestLabel(progress.gauntletBest)}`
+                : gauntletOpen
+                  ? "Endless waves"
+                  : `Unlocks at Mission ${GAUNTLET_UNLOCK_LEVEL}`
             }
           >
             Gauntlet
-            {progress.gauntletBest
-              ? ` · best ${hubGauntletBestLabel(progress.gauntletBest)}`
-              : ""}
-          </button>
-          <button type="button" className={styles.secondary} onClick={onStats}>
-            Stats
+            {progress.gauntletBest ? ` · ${progress.gauntletBest.wavesCleared}` : ""}
           </button>
         </div>
-        {milestoneLine && <p className={styles.milestones}>{milestoneLine}</p>}
+
+        <details className={styles.hubDetails} open={showExplainer}>
+          <summary>Rules &amp; settings</summary>
+          <div className={styles.hubDetailsBody}>
+            {showExplainer ? (
+              <div className={styles.explainer}>
+                <p>
+                  <strong>Learn</strong> — calmer coaching, {accuracyGate("learn")}% accuracy to unlock,
+                  Form Coach optional.
+                </p>
+                <p>
+                  <strong>Retrain</strong> — habit-breaking path: home check, pace gates, mandatory drills
+                  between stages, {accuracyGate("retrain")}% accuracy gate.
+                </p>
+                <button type="button" className={styles.explainerDismiss} onClick={onDismissTrackExplainer}>
+                  Got it
+                </button>
+              </div>
+            ) : (
+              <p className={styles.trackHint}>
+                {progress.track === "retrain"
+                  ? "Form first. Mandatory drills between stages."
+                  : "Calmer arena — Form Coach optional."}
+              </p>
+            )}
+            <p className={styles.legend}>
+              ★★ {gate}%+ unlocks the next mission · ★★★ hits WPM target with no peek
+              {progress.track === "retrain" ? " · Retrain needs Form drills between stages" : ""}
+            </p>
+            <div className={styles.prefs}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={progress.coachPrefs.formCoach || progress.track === "retrain"}
+                  disabled={progress.track === "retrain"}
+                  onChange={onToggleFormCoach}
+                />
+                Form Coach
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={progress.coachPrefs.sound}
+                  onChange={onToggleSound}
+                />
+                Sound
+              </label>
+              <label>
+                <input type="checkbox" checked={demo} onChange={onToggleDemoMode} />
+                Demo mode
+              </label>
+            </div>
+          </div>
+        </details>
       </header>
-
-      <div className={styles.tracks}>
-        <button
-          type="button"
-          className={progress.track === "learn" ? styles.trackOn : styles.track}
-          onClick={() => onTrack("learn")}
-        >
-          Learn
-        </button>
-        <button
-          type="button"
-          className={progress.track === "retrain" ? styles.trackOn : styles.track}
-          onClick={() => onTrack("retrain")}
-        >
-          Retrain
-        </button>
-      </div>
-
-      {showExplainer ? (
-        <div className={styles.explainer}>
-          <p>
-            <strong>Learn</strong> — calmer coaching, {accuracyGate("learn")}% accuracy to unlock,
-            Form Coach optional.
-          </p>
-          <p>
-            <strong>Retrain</strong> — habit-breaking path: home check, pace gates, mandatory drills
-            between stages, {accuracyGate("retrain")}% accuracy gate.
-          </p>
-          <button type="button" className={styles.explainerDismiss} onClick={onDismissTrackExplainer}>
-            Got it
-          </button>
-        </div>
-      ) : (
-        <p className={styles.trackHint}>
-          {progress.track === "retrain"
-            ? "Form first. Stronger coaching and mandatory drills between stages."
-            : "New typists — calmer arena after early missions."}
-        </p>
-      )}
-
-      <p className={styles.legend}>
-        ★★ {gate}%+ unlocks the next mission · ★★★ hits that level’s WPM target with no peek
-        {progress.track === "retrain" ? " · Retrain also requires Form drills between stages" : ""}
-      </p>
-
-      <div className={styles.prefs}>
-        <label>
-          <input
-            type="checkbox"
-            checked={progress.coachPrefs.formCoach || progress.track === "retrain"}
-            disabled={progress.track === "retrain"}
-            onChange={onToggleFormCoach}
-          />
-          Form Coach
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={progress.coachPrefs.sound}
-            onChange={onToggleSound}
-          />
-          Sound
-        </label>
-        <label>
-          <input type="checkbox" checked={demo} onChange={onToggleDemoMode} />
-          Demo mode
-        </label>
-      </div>
 
       {demo && (
         <p className={styles.demoBanner}>
-          Demo mode — all missions and drills are open. Round results won&apos;t save progress.
+          Demo mode — all missions open. Results won&apos;t save.
         </p>
       )}
 
@@ -324,8 +343,8 @@ export function LevelHub({
         })}
       </ol>
 
-      <div className={styles.drills}>
-        <h2>Habit drills</h2>
+      <details className={styles.drillsDetails} open={highlightedDrill != null}>
+        <summary>Habit drills</summary>
         <div className={styles.drillGrid}>
           {DRILLS.map((d) => {
             const unlocked = demo || progress.unlockedLevel >= d.afterLevel;
@@ -348,7 +367,7 @@ export function LevelHub({
             );
           })}
         </div>
-      </div>
+      </details>
     </section>
     {practiceOpen && (
       <PracticeSetupModal

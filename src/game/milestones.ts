@@ -132,12 +132,12 @@ export function formBadgesEarned(progress: ProgressState): number {
 export function nextRequiredDrill(progress: ProgressState, demo: boolean): DrillDef | null {
   if (demo || progress.track !== "retrain") return null;
   for (const level of LEVELS) {
-    if (level.id > progress.unlockedLevel) break;
     if (level.id <= 1) continue;
     const prev = LEVELS[level.id - 2];
     if (!prev.unlockDrill) continue;
     const key = formBadgeKey(prev.id, prev.unlockDrill);
-    if (!progress.formBadges[key]) return getDrill(prev.unlockDrill);
+    if (progress.formBadges[key]) continue;
+    if (progress.unlockedLevel >= prev.id) return getDrill(prev.unlockDrill);
   }
   return null;
 }

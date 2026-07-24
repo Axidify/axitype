@@ -69,7 +69,7 @@ describe("milestones", () => {
   it("retrain badge summary with next drill", () => {
     const progress = defaultProgress();
     progress.track = "retrain";
-    progress.unlockedLevel = 5;
+    progress.unlockedLevel = 4;
     expect(retrainBadgeSummary(progress, false)).toContain("next: Home Return");
   });
 });

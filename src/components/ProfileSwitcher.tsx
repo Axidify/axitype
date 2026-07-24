@@ -9,6 +9,7 @@ interface ProfileSwitcherProps {
   onCreate: (name: string) => { ok: true } | { ok: false; error: string };
   onRename: (profileId: string, name: string) => { ok: true } | { ok: false; error: string };
   onDelete: (profileId: string) => { ok: true } | { ok: false; error: string };
+  className?: string;
 }
 
 export function ProfileSwitcher({
@@ -18,6 +19,7 @@ export function ProfileSwitcher({
   onCreate,
   onRename,
   onDelete,
+  className,
 }: ProfileSwitcherProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"menu" | "create" | "rename">("menu");
@@ -34,7 +36,7 @@ export function ProfileSwitcher({
   };
 
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap}${className ? ` ${className}` : ""}`}>
       <button
         type="button"
         className={styles.trigger}
