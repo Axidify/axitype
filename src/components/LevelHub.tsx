@@ -42,6 +42,7 @@ interface LevelHubProps {
   onGauntlet: () => void;
   onFocus: () => void;
   focusPreview?: string | null;
+  hubCoaching?: { title: string; detail: string } | null;
   onStats: () => void;
   onDrill: (kind: DrillKind, afterLevel: number) => void;
   onToggleFormCoach: () => void;
@@ -80,6 +81,7 @@ export function LevelHub({
   onGauntlet,
   onFocus,
   focusPreview = null,
+  hubCoaching = null,
   onStats,
   onDrill,
   onToggleFormCoach,
@@ -230,6 +232,12 @@ export function LevelHub({
             {progress.gauntletBest ? ` · ${progress.gauntletBest.wavesCleared}` : ""}
           </button>
         </div>
+
+        {hubCoaching && (
+          <p className={styles.coachingTip}>
+            <strong>{hubCoaching.title}</strong> — {hubCoaching.detail}
+          </p>
+        )}
 
         <details className={styles.hubDetails} open={showExplainer}>
           <summary>Rules &amp; settings</summary>

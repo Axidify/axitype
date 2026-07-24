@@ -9,6 +9,16 @@ npm install
 npm run dev
 ```
 
+On your home Wi‑Fi, open the **Network** URL Vite prints (e.g. `http://192.168.x.x:5173`) from another device.
+
+### Cursor Ports (internet)
+
+1. Run `npm run dev` and confirm it listens on port **5173**.
+2. Open the **Ports** panel in Cursor — port 5173 should appear (or add it manually).
+3. Set visibility to **Public** (not Private) and open the forwarded HTTPS URL Cursor gives you.
+
+If the page is blocked with “host is not allowed”, restart dev after pulling — `vite.config.ts` sets `server.allowedHosts: true` for tunnel hostnames. Dev-only; do not use that setting in production builds.
+
 ## Scripts
 
 - `npm run dev` — local app

@@ -39,6 +39,26 @@ describe("practiceSetup", () => {
     expect(result.result.prompt.length).toBeGreaterThan(10);
   });
 
+  it("scales practice prompt length when lengthScale is eased", () => {
+    const full = buildPracticeSession(
+      DEFAULT_PRACTICE_CONFIG,
+      unlocked,
+      defaultProgress().keyStats,
+      {},
+      1,
+    );
+    const eased = buildPracticeSession(
+      DEFAULT_PRACTICE_CONFIG,
+      unlocked,
+      defaultProgress().keyStats,
+      {},
+      0.85,
+    );
+    expect(full.ok && eased.ok).toBe(true);
+    if (!full.ok || !eased.ok) return;
+    expect(eased.result.prompt.length).toBeLessThan(full.result.prompt.length);
+  });
+
   it("rejects focus with too few keys", () => {
     const result = buildPracticeSession(
       { duration: "short", focus: "topRow" },

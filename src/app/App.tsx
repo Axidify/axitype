@@ -35,7 +35,7 @@ import {
   type DailyBest,
 } from "../game/daily";
 import { pastePracticeTitle, preparePastePrompt } from "../game/pastePractice";
-import { getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
+import { accuracyGate, getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
 import { buildPracticeSession, DEFAULT_PRACTICE_CONFIG, practiceMissCounts, type PracticeConfig } from "../game/practiceSetup";
 import { buildSessionPrompt, promptModeForLevel } from "../game/prompts";
 import { calcStars } from "../game/scoring";
@@ -51,7 +51,12 @@ import {
   type AnalyticsEventInput,
   type DrillStartSource,
 } from "../lib/analytics";
-import { summarizeAnalytics } from "../lib/analyticsInsights";
+import {
+  focusSpeedCoaching,
+  hubCoachingTip,
+  missionGateCoaching,
+  summarizeAnalytics,
+} from "../lib/analyticsInsights";
 import {
   parseBackupImport,
   profileExportFilename,
@@ -260,16 +265,24 @@ export default function App() {
 
   const startConfiguredPractice = (config: PracticeConfig) => {
     const misses = practiceMissCounts(progress);
+    const lengthScale = playInsights().practiceLengthScale;
     const built = buildPracticeSession(
       config,
       unlockedKeys,
       progress.keyStats,
       misses,
+      lengthScale,
     );
     if (!built.ok) return;
     const { result } = built;
     const prompt = freshPrompt(() => {
-      const next = buildPracticeSession(config, unlockedKeys, progress.keyStats, misses);
+      const next = buildPracticeSession(
+        config,
+        unlockedKeys,
+        progress.keyStats,
+        misses,
+        lengthScale,
+      );
       return next.ok ? next.result.prompt : result.prompt;
     }, lastPromptRef.current);
     lastPromptRef.current = prompt;
@@ -1022,6 +1035,11 @@ export default function App() {
           onGauntlet={startGauntlet}
           onFocus={startFocus}
           focusPreview={focusPreview}
+          hubCoaching={(() => {
+            if (progress.coachPrefs.demoMode) return null;
+            const tip = hubCoachingTip(playInsights());
+            return tip ? { title: tip.title, detail: tip.detail } : null;
+          })()}
           onStats={() => setView("stats")}
           onDrill={(kind, afterLevel) => startDrill(kind, afterLevel, undefined, undefined, "hub")}
           onToggleFormCoach={() =>
@@ -1089,6 +1107,11 @@ export default function App() {
           lastAccuracy={focusGate.lastAccuracy}
           lastWpm={focusGate.lastWpm}
           lastFocusMisses={focusGate.lastFocusMisses}
+          coachingNote={
+            progress.coachPrefs.demoMode || focusGate.gate !== "accuracyToSpeed"
+              ? null
+              : focusSpeedCoaching(playInsights())
+          }
           onProgress={progressFromFocusGate}
           onPracticeAgain={practiceFromFocusGate}
           onExit={() => {
@@ -1137,6 +1160,13 @@ export default function App() {
           dailySummary={dailySummary}
           missionSummary={missionSummary}
           drillSummary={drillSummary}
+          insightsCoaching={(() => {
+            if (progress.coachPrefs.demoMode || typeof lastResult.levelId !== "number") return null;
+            return missionGateCoaching(
+              playInsights(),
+              lastResult.snapshot.accuracy < accuracyGate(progress.track),
+            );
+          })()}
           returnToLevelId={
             lastResult.levelId === "drill" ? session?.returnToLevelId ?? null : null
           }

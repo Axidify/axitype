@@ -213,7 +213,9 @@ export function Stats({
             </li>
           ))}
         </ul>
-        {(insights.focusAccuracyLength < 42 || insights.dailyPromptLength < 110) && (
+        {(insights.focusAccuracyLength < 42 ||
+          insights.dailyPromptLength < 110 ||
+          insights.practiceLengthScale < 1) && (
           <p className={styles.tuningNote}>
             Active tuning:
             {insights.focusAccuracyLength < 42
@@ -221,6 +223,9 @@ export function Stats({
               : ""}
             {insights.dailyPromptLength < 110
               ? ` Daily prompts → ${insights.dailyPromptLength} chars.`
+              : ""}
+            {insights.practiceLengthScale < 1
+              ? ` Practice length → ${Math.round(insights.practiceLengthScale * 100)}%.`
               : ""}
           </p>
         )}

@@ -212,8 +212,10 @@ export function buildPracticeSession(
   unlockedKeys: string,
   stats: KeyStatMap | undefined,
   missCounts: Record<string, number>,
+  lengthScale = 1,
 ): { ok: true; result: PracticeBuildResult } | { ok: false; error: string } {
   const duration = practiceDurationOption(config.duration);
+  const targetLength = Math.max(24, Math.round(duration.targetLength * lengthScale));
   const finger = config.finger ?? "LI";
   const { keys, lockFinger } = keysForPracticeFocus(
     unlockedKeys,
@@ -231,14 +233,14 @@ export function buildPracticeSession(
 
   let prompt: string;
   if (config.focus === "alternating") {
-    prompt = generateAlternatingDrill(keys, duration.targetLength, stats);
+    prompt = generateAlternatingDrill(keys, targetLength, stats);
   } else if (config.focus === "finger" && lockFinger) {
-    prompt = generateOneFingerDrill(lockFinger, duration.targetLength, stats);
+    prompt = generateOneFingerDrill(lockFinger, targetLength, stats);
   } else {
     prompt = buildSessionPrompt({
       mode: promptModeForPractice(keys),
       keys,
-      targetLength: duration.targetLength,
+      targetLength,
       stats,
       preferAlternating: config.focus === "weak" || config.focus === "all",
     });

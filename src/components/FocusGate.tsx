@@ -14,6 +14,7 @@ interface FocusGateProps {
   lastAccuracy: number;
   lastWpm: number;
   lastFocusMisses: number;
+  coachingNote?: string | null;
   onProgress: () => void;
   onPracticeAgain: () => void;
   onExit: () => void;
@@ -28,6 +29,7 @@ export function FocusGate({
   lastAccuracy,
   lastWpm,
   lastFocusMisses,
+  coachingNote = null,
   onProgress,
   onPracticeAgain,
   onExit,
@@ -74,6 +76,7 @@ export function FocusGate({
         <p className={styles.stats}>
           Last round · {lastAccuracy}% accuracy · {lastWpm} WPM · {lastFocusMisses} focus misses
         </p>
+        {coachingNote && <p className={styles.coaching}>{coachingNote}</p>}
 
         <div className={styles.actions}>
           <button type="button" className={styles.primary} onClick={onProgress}>

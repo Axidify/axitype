@@ -82,6 +82,19 @@
   margin-bottom: 0.5rem;
 }
 
+.coachingTip {
+  margin: 0 0 0.65rem;
+  max-width: 36rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--warn, #b45309) 75%, var(--ink-muted));
+  text-align: center;
+}
+
+.coachingTip strong {
+  font-weight: 700;
+}
+
 .modeChip,
 .primary,
 .secondary,
