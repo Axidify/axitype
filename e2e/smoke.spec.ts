@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
   completeArenaRound,
+  completeFocusSession,
   passHomeCheckIfNeeded,
   startDailyFromHub,
   startFocusFromHub,
@@ -62,7 +63,17 @@ test.describe("smoke", () => {
     await typeArenaPrompt(page);
 
     await expect(page.getByText("Speed target hit")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Speed tier 1 of 3 cleared.")).toBeVisible();
     await expect(page.getByRole("button", { name: /Next tier/i })).toBeVisible();
+  });
+
+  test("focus: hub → full session → results", async ({ page }) => {
+    await seedDemoProfile(page, "learn");
+    await page.goto("/");
+
+    await startFocusFromHub(page);
+    await completeFocusSession(page);
+    await expect(page.getByText("Demo session — progress not saved")).toBeVisible();
   });
 
   test("gauntlet: hub → wave 1 clear → wave 2", async ({ page }) => {

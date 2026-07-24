@@ -1,20 +1,27 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.8.0  
-**Status:** Released — zero-warning lint pass.
+**Current version:** v2.9.0  
+**Status:** Released — Focus gate polish and full-session E2E.
 
 ---
 
-## Current focus (v2.9 — candidates)
+## Current focus (v3.0 — candidates)
 
 **Ship next:**
 
-1. Further mode polish from playtesting
+1. Insights-driven copy tweaks or broader playtest polish
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.8 — lint cleanup):**
+**Just shipped (v2.9 — Focus polish):**
+
+- FocusGate Space/Escape shortcuts + kbd hint on primary CTA
+- Speed tier progress copy (`Speed tier N of 3 cleared`)
+- Focus full-session E2E — accuracy + 3 speed tiers → Rehab complete Results
+- FocusGate component tests
+
+**Previously shipped (v2.8 — lint cleanup):**
 
 - Cleared all oxlint warnings (regex escapes, hook deps, Stats insights memo)
 - `npm run lint` exits clean with no warnings

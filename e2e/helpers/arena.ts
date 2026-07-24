@@ -39,6 +39,37 @@ export async function startGauntletFromHub(page: Page): Promise<void> {
   await page.getByRole("button", { name: /^Gauntlet/ }).click();
 }
 
+export async function clickFocusGatePrimary(page: Page): Promise<void> {
+  await page
+    .getByRole("button", { name: /Start speed|Next tier|Finish session/i })
+    .click();
+}
+
+/** Clear accuracy, then all three speed tiers, landing on Focus Results. */
+export async function completeFocusSession(page: Page): Promise<void> {
+  await passHomeCheckIfNeeded(page);
+  await typeArenaPrompt(page);
+
+  await expect(page.getByText("Accuracy cleared")).toBeVisible({ timeout: 15_000 });
+  await clickFocusGatePrimary(page);
+
+  for (let tier = 1; tier <= 3; tier++) {
+    await passHomeCheckIfNeeded(page);
+    await typeArenaPrompt(page);
+    await expect(page.getByText("Speed target hit")).toBeVisible({ timeout: 15_000 });
+    if (tier < 3) {
+      await expect(page.getByText(`Speed tier ${tier} of 3 cleared.`)).toBeVisible();
+      await clickFocusGatePrimary(page);
+    }
+  }
+
+  await expect(page.getByRole("heading", { name: "All 3 speed tiers cleared" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await clickFocusGatePrimary(page);
+  await expect(page.getByText("Rehab complete")).toBeVisible({ timeout: 15_000 });
+}
+
 export async function startDailyFromHub(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Daily", exact: true }).click();
 }
