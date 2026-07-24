@@ -1,20 +1,27 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.5.0  
-**Status:** Released — full hub mode E2E smoke (7 specs).
+**Current version:** v2.6.0  
+**Status:** Released — component tests for PromptLine, Results, and Retrain drill gates.
 
 ---
 
-## Current focus (v2.6 — candidates)
+## Current focus (v2.7 — candidates)
 
 **Ship next:**
 
-1. Further mode polish or component-level tests
+1. Further mode polish or deeper E2E (Focus speed round, Gauntlet fail path)
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.5 — E2E full hub):**
+**Just shipped (v2.6 — component tests):**
+
+- `PromptLine` component tests — aria-label, paint layer, caret/miss states
+- `Results` component tests — mission, Focus, Daily, Gauntlet copy and keyboard shortcuts
+- `progression.ts` — extracted Retrain drill gate helpers + unit tests
+- Vitest setup for jsdom component specs (`*.test.tsx`)
+
+**Previously shipped (v2.5 — E2E full hub):**
 
 - Daily smoke — hub → challenge → Results
 - Practice smoke — hub → setup modal → Results

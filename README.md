@@ -29,7 +29,7 @@ If the page is blocked with “host is not allowed”, restart dev after pulling
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** Further polish / E2E expansion (PWA / achievements deferred).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** Further polish / deeper E2E (PWA / achievements deferred).
 
 ## What’s included
 
