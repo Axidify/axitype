@@ -24,12 +24,12 @@ If the page is blocked with “host is not allowed”, restart dev after pulling
 - `npm run dev` — local app
 - `npm run build` — production build
 - `npm test` — Vitest unit tests
-- `npm run test:e2e` — Playwright smoke (9 specs — hub modes + Focus speed + Gauntlet fail)
+- `npm run test:e2e` — Playwright smoke (10 specs)
 - `npm run ci` — full local CI (lint, unit, build, e2e)
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** Mode polish from playtesting (PWA / achievements deferred).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for priorities. **Current focus:** Insights copy / broader polish (PWA / achievements deferred).
 
 ## What’s included
 

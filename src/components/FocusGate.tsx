@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { FocusRunState } from "../game/focus";
 import { FOCUS_MAX_SPEED_TIER, focusSpeedTarget } from "../game/focus";
 import type { Track } from "../game/levels";
@@ -65,6 +66,34 @@ export function FocusGate({
   const practiceLabel =
     gate === "accuracyToSpeed" ? "Practice accuracy again" : "Practice this speed again";
 
+  const tierNote =
+    gate === "speedTier"
+      ? canRaiseTier
+        ? `Speed tier ${run.speedTier} of ${FOCUS_MAX_SPEED_TIER} cleared.`
+        : `All ${FOCUS_MAX_SPEED_TIER} speed tiers cleared.`
+      : null;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onExit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onExit]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "Space" && e.key !== " ") return;
+      e.preventDefault();
+      onProgress();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onProgress]);
+
   return (
     <section className={styles.wrap}>
       <header className={styles.top}>
@@ -79,6 +108,7 @@ export function FocusGate({
         <h2>{headline}</h2>
         <p className={styles.detail}>{detail}</p>
         {phaseNote && <p className={styles.phaseNote}>{phaseNote}</p>}
+        {tierNote && <p className={styles.phaseNote}>{tierNote}</p>}
         <p className={styles.stats}>
           Last round · {lastAccuracy}% accuracy · {lastWpm} WPM · {lastFocusMisses} focus misses
         </p>
@@ -86,7 +116,7 @@ export function FocusGate({
 
         <div className={styles.actions}>
           <button type="button" className={styles.primary} onClick={onProgress}>
-            {progressLabel}
+            {progressLabel} <span className={styles.kbd}>Space</span>
           </button>
           <button type="button" className={styles.secondary} onClick={onPracticeAgain}>
             {practiceLabel}
