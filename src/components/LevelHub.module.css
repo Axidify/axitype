@@ -23,6 +23,14 @@
   font-size: 1.1rem;
 }
 
+.milestones {
+  margin: 0.85rem auto 0;
+  max-width: 42rem;
+  font-size: 0.92rem;
+  color: color-mix(in srgb, var(--accent) 65%, var(--ink-muted));
+  font-weight: 650;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

@@ -5,6 +5,7 @@ import { LevelHub } from "../components/LevelHub";
 import { Results } from "../components/Results";
 import { Stats } from "../components/Stats";
 import { buildDrillPrompt, getDrill } from "../game/drills";
+import { buildDrillMilestone, buildMissionMilestone, type DrillMilestone, type MissionMilestone } from "../game/milestones";
 import {
   buildGauntletPrompt,
   gauntletWavePassed,
@@ -35,7 +36,8 @@ import {
 } from "../game/daily";
 import { pastePracticeTitle, preparePastePrompt } from "../game/pastePractice";
 import { getLevel, LEVELS, type DrillKind, type Track } from "../game/levels";
-import { buildSessionPrompt, promptModeForLevel, promptModeForPractice } from "../game/prompts";
+import { buildPracticeSession, DEFAULT_PRACTICE_CONFIG, practiceMissCounts, type PracticeConfig } from "../game/practiceSetup";
+import { buildSessionPrompt, promptModeForLevel } from "../game/prompts";
 import { calcStars } from "../game/scoring";
 import type { FingerId } from "../game/fingers";
 import {
@@ -88,6 +90,8 @@ interface Session {
   focusRun?: FocusRunState;
   /** Original paste input for restart. */
   pasteSource?: string;
+  /** Practice mode config for restart. */
+  practiceConfig?: PracticeConfig;
   /** Bumps every start/retry so Arena remounts with a fresh run. */
   runId: number;
 }
@@ -157,6 +161,8 @@ export default function App() {
   const [gauntletSummary, setGauntletSummary] = useState<GauntletSummary | null>(null);
   const [focusSummary, setFocusSummary] = useState<FocusSummary | null>(null);
   const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
+  const [missionSummary, setMissionSummary] = useState<MissionMilestone | null>(null);
+  const [drillSummary, setDrillSummary] = useState<DrillMilestone | null>(null);
   const [focusGate, setFocusGate] = useState<FocusGateState | null>(null);
   const runIdRef = useRef(0);
   const lastPromptRef = useRef<string | null>(null);
@@ -188,6 +194,8 @@ export default function App() {
     setGauntletSummary(null);
     setFocusSummary(null);
     setDailySummary(null);
+    setMissionSummary(null);
+    setDrillSummary(null);
     setFocusGate(null);
     setView("hub");
   };
@@ -250,24 +258,28 @@ export default function App() {
     setView("arena");
   };
 
-  const startPractice = (timedSeconds?: number) => {
-    const prompt = freshPrompt(
-      () =>
-        buildSessionPrompt({
-          mode: promptModeForPractice(unlockedKeys),
-          keys: unlockedKeys,
-          targetLength: timedSeconds ? 200 : 100,
-          stats: progress.keyStats,
-          preferAlternating: true,
-        }),
-      lastPromptRef.current,
+  const startConfiguredPractice = (config: PracticeConfig) => {
+    const misses = practiceMissCounts(progress);
+    const built = buildPracticeSession(
+      config,
+      unlockedKeys,
+      progress.keyStats,
+      misses,
     );
+    if (!built.ok) return;
+    const { result } = built;
+    const prompt = freshPrompt(() => {
+      const next = buildPracticeSession(config, unlockedKeys, progress.keyStats, misses);
+      return next.ok ? next.result.prompt : result.prompt;
+    }, lastPromptRef.current);
     lastPromptRef.current = prompt;
     setSession({
-      title: timedSeconds ? `Practice · ${timedSeconds}s` : "Practice lane",
+      title: result.title,
       prompt,
       levelId: "practice",
-      timedSeconds,
+      timedSeconds: result.timedSeconds,
+      lockFinger: result.lockFinger,
+      practiceConfig: config,
       runId: nextRunId(),
     });
     trackEvent({ type: "roundStarted", levelId: "practice", ...analyticsBase() });
@@ -296,6 +308,8 @@ export default function App() {
     const prompt = buildDailyPrompt(unlockedKeys, progress.keyStats, dateKey, length);
     lastPromptRef.current = prompt;
     setDailySummary(null);
+    setMissionSummary(null);
+    setDrillSummary(null);
     setGauntletSummary(null);
     setFocusSummary(null);
     setSession({
@@ -707,8 +721,8 @@ export default function App() {
       startDaily();
       return;
     }
-    if (session.levelId === "practice") {
-      startPractice(session.timedSeconds);
+    if (session.levelId === "practice" && session.practiceConfig) {
+      startConfiguredPractice(session.practiceConfig);
       return;
     }
     if (session.levelId === "paste" && session.pasteSource) {
@@ -736,7 +750,7 @@ export default function App() {
       session.levelId === "focus" ||
       session.levelId === "daily" ||
       session.levelId === "paste" ||
-      (session.levelId === "practice" && Boolean(session.timedSeconds)));
+      session.levelId === "practice");
 
   const applyResult = (result: ArenaResult) => {
     const { snapshot, levelId, drill, keyEvents } = result;
@@ -787,6 +801,8 @@ export default function App() {
 
       setLastStars(0);
       setUnlockedNext(false);
+      setMissionSummary(null);
+      setDrillSummary(null);
       setGauntletSummary({
         wavesCleared: cleared,
         totalScore: runScore,
@@ -875,6 +891,29 @@ export default function App() {
     setLastStars(stars);
     setUnlockedNext(unlocked);
     setLastResult(result);
+
+    if (typeof levelId === "number") {
+      const priorStars = progress.levelStars[levelId] ?? 0;
+      const priorBest = progress.bestByLevel[levelId];
+      setMissionSummary(
+        buildMissionMilestone({
+          priorStars,
+          newStars: stars,
+          priorBestScore: priorBest?.score ?? null,
+          runScore: snapshot.score,
+          completed,
+        }),
+      );
+      setDrillSummary(null);
+    } else if (levelId === "drill" && drill) {
+      const after = session?.drillAfterLevel ?? 1;
+      const wasEarned = Boolean(progress.formBadges[formBadgeKey(after, drill)]);
+      setDrillSummary(buildDrillMilestone(drill, after, wasEarned, completed));
+      setMissionSummary(null);
+    } else {
+      setMissionSummary(null);
+      setDrillSummary(null);
+    }
 
     if (levelId === "daily") {
       const dateKey = localDateKey();
@@ -976,7 +1015,7 @@ export default function App() {
             }));
           }}
           onPlayLevel={startLevel}
-          onPractice={startPractice}
+          onStartPractice={startConfiguredPractice}
           unlockedKeys={unlockedKeys}
           onPastePractice={startPastePractice}
           onDaily={startDaily}
@@ -1077,6 +1116,8 @@ export default function App() {
             else if (lastResult.levelId === "focus") startFocus();
             else if (lastResult.levelId === "daily") startDaily();
             else if (lastResult.levelId === "paste" && session?.pasteSource) startPastePractice(session.pasteSource);
+            else if (lastResult.levelId === "practice" && session?.practiceConfig)
+              startConfiguredPractice(session.practiceConfig);
             else if (typeof lastResult.levelId === "number") startLevel(lastResult.levelId);
             else if (lastResult.drill && session?.drillAfterLevel)
               startDrill(
@@ -1086,7 +1127,7 @@ export default function App() {
                 session.returnToLevelId,
                 "results",
               );
-            else startPractice(session?.timedSeconds);
+            else startConfiguredPractice(session?.practiceConfig ?? DEFAULT_PRACTICE_CONFIG);
           }}
           onNext={startLevel}
           onHub={() => setView("hub")}
@@ -1094,6 +1135,8 @@ export default function App() {
           gauntletBest={progress.gauntletBest}
           focusSummary={focusSummary}
           dailySummary={dailySummary}
+          missionSummary={missionSummary}
+          drillSummary={drillSummary}
           returnToLevelId={
             lastResult.levelId === "drill" ? session?.returnToLevelId ?? null : null
           }

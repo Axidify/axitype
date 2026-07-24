@@ -8,6 +8,14 @@ import { formatDailyLabel, type DailyBest } from "../game/daily";
 import { accuracyGate, getLevel, type DrillKind, type Track } from "../game/levels";
 import { gauntletAccuracyForWave } from "../game/gauntlet";
 import { explainStars } from "../game/scoring";
+import type { DrillMilestone, MissionMilestone } from "../game/milestones";
+import {
+  drillResultsKicker,
+  drillResultsStatus,
+  gauntletGapStatus,
+  missionResultsKicker,
+  missionResultsStatus,
+} from "../game/milestones";
 import type { EngineSnapshot } from "../game/engine";
 import type { GauntletBest } from "../lib/storage";
 import { LiveWpmChart } from "./charts/LiveWpmChart";
@@ -54,6 +62,8 @@ interface ResultsProps {
     isNewBest: boolean;
     previousBest: DailyBest | null;
   } | null;
+  missionSummary?: MissionMilestone | null;
+  drillSummary?: DrillMilestone | null;
   onRetry: () => void;
   onNext: (levelId: number) => void;
   onHub: () => void;
@@ -82,6 +92,8 @@ export function Results({
   gauntletBest,
   focusSummary = null,
   dailySummary = null,
+  missionSummary = null,
+  drillSummary = null,
   onRetry,
   onNext,
   onHub,
@@ -161,6 +173,7 @@ export function Results({
 
   const displayStars = breakdown?.stars ?? stars;
   const unlockedEnough = displayStars >= 2;
+  const isDrill = levelId === "drill" && drillSummary !== null;
   const kicker =
     isDaily
       ? dailySummary.isNewBest
@@ -172,13 +185,17 @@ export function Results({
       ? gauntletSummary.newBest
         ? "New best run"
         : "Gauntlet over"
-      : !completed || snapshot.timedOut
-        ? "Round over"
-        : canReturnToMission && completed
-          ? "Drill done"
-          : unlockedEnough
-            ? "Lane cleared"
-            : "Round over";
+      : isDrill
+        ? drillResultsKicker(drillSummary, completed)
+        : isMission && missionSummary
+          ? missionResultsKicker(missionSummary, completed, snapshot.timedOut, unlockedEnough)
+          : !completed || snapshot.timedOut
+            ? "Round over"
+            : canReturnToMission && completed
+              ? "Drill done"
+              : unlockedEnough
+                ? "Lane cleared"
+                : "Round over";
 
   const statusLine = (() => {
     if (isDaily && dailySummary) {
@@ -204,10 +221,28 @@ export function Results({
       const gate = gauntletAccuracyForWave(gauntletSummary.failedWave, track);
       if (demoMode) return "Demo run — best not saved";
       if (gauntletSummary.newBest) return "Personal best saved";
+      const gap = gauntletGapStatus(
+        gauntletSummary.wavesCleared,
+        gauntletBest,
+        gauntletSummary.newBest,
+      );
+      if (gap) return gap;
       if (!completed || snapshot.timedOut) {
         return `Wave ${gauntletSummary.failedWave} timed out — need ${gate}%+ accuracy to continue.`;
       }
       return `Wave ${gauntletSummary.failedWave} fell short — need ${gate}%+ accuracy to continue.`;
+    }
+    if (isDrill && drillSummary) {
+      if (demoMode) return "Demo run — progress not saved";
+      return drillResultsStatus(
+        drillSummary,
+        completed,
+        canReturnToMission && returnMission ? returnMission.title : null,
+      );
+    }
+    if (isMission && missionSummary) {
+      if (demoMode) return "Demo run — progress not saved";
+      return missionResultsStatus(missionSummary, unlockedNext, breakdown?.nextHint ?? null);
     }
     if (demoMode) return "Demo run — progress not saved";
     if (unlockedNext) return "Next mission unlocked";
@@ -224,6 +259,9 @@ export function Results({
   const statusTone =
     (unlockedNext && !demoMode) ||
     (canReturnToMission && completed) ||
+    (isDrill && drillSummary?.badgeNewlyEarned) ||
+    (isMission && missionSummary?.starsImproved) ||
+    (isMission && missionSummary?.newMissionBest) ||
     isFocus ||
     (isDaily && dailySummary?.isNewBest) ||
     (isGauntlet && gauntletSummary?.newBest)
@@ -262,10 +300,15 @@ export function Results({
             {dailySummary.score.toLocaleString()} score
           </p>
         ) : (
-          <p className={styles.stars}>
-            {"★".repeat(displayStars)}
-            {"☆".repeat(Math.max(0, 3 - displayStars))}
-          </p>
+          <>
+            <p className={styles.stars}>
+              {"★".repeat(displayStars)}
+              {"☆".repeat(Math.max(0, 3 - displayStars))}
+            </p>
+            {isMission && missionSummary?.newMissionBest && !demoMode && (
+              <p className={styles.milestoneNote}>New mission best</p>
+            )}
+          </>
         )}
         {statusLine && <p className={statusTone}>{statusLine}</p>}
         {isGauntlet && gauntletBest && !demoMode && (

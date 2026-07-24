@@ -1,21 +1,27 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.8.0  
-**Status:** Released — local profiles (cloud-ready shape).
+**Current version:** v1.9.0  
+**Status:** Released — practice setup + milestone surfacing.
 
 ---
 
-## Current focus (v1.9 — candidates)
+## Current focus (v2.0 — candidates)
 
-**Ship next (pick one):**
+**Ship next:**
 
-1. Hub / Results milestone surfacing (Form badges, Daily, Gauntlet PB — no trophy catalog)
-2. Further analytics-informed copy / gate tweaks
+1. Further analytics-informed copy / gate tweaks
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v1.8 — Local profiles):**
+**Just shipped (v1.9 — Practice + milestones):**
+
+- Hub **Practice…** modal — duration (short/long + timed sprints) and focus (all, weak finger, rows, hands, alternating, one finger)
+- Weak finger uses recent-round misses with lifetime fallback; honest target hint in modal
+- Hub milestone strip — Form badge progress (Retrain) or star summary (Learn); richer Daily/Gauntlet PB labels
+- Results milestone copy — star earned / three stars, mission PB, Form badge earned, Gauntlet gap-to-best
+
+**Previously shipped (v1.8 — Local profiles):**
 
 - Hub profile switcher — create / rename / switch / delete (max 5)
 - Store `axitype.profiles.v1` with UUID ids; per-profile progress + analytics
@@ -119,6 +125,9 @@ AxiType is a browser-based touch typing tutor with:
 | Daily challenge | **v1.6** | Local best per day |
 | Instrumentation-backed Insights | **v1.6.1** | Soft Focus/Daily length tuning |
 | Paste-your-own practice | **v1.7** | Charset filter + arena restart |
+| Local profiles | **v1.8** | Hub switcher, per-profile analytics, profile export |
+| Practice setup modal | **v1.9** | Duration + focus chips; weak finger from recent misses |
+| Hub/Results milestone surfacing | **v1.9** | Form badges, star deltas, PB callouts — no trophy catalog |
 
 ---
 
@@ -164,11 +173,11 @@ AxiType is a browser-based touch typing tutor with:
 
 **Do not** ship an achievement catalog in the same release as profiles.
 
-### Hub / Results milestone surfacing
+### Hub / Results milestone surfacing ✅ shipped (v1.9.0)
 
 **Impact:** Medium · **Effort:** Low
 
-Not a trophy system — surface milestones players already earn (Form badges, Focus unlock, Gauntlet PB, Daily best) more clearly in Results / Hub when playtesting shows gaps.
+Surfaced existing milestones in Hub/Results — Form badges, star deltas, mission PBs, Daily/Gauntlet PB labels, Gauntlet gap-to-best. No trophy catalog.
 
 ### Analytics-informed copy / gate tweaks
 
@@ -216,8 +225,7 @@ Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form
 
 ## Suggested release slices
 
-### v1.9 — *(next)*
-- Hub/Results milestone surfacing
+### v2.0 — *(next)*
 - Insights-driven copy / gate tweaks
 
 ### Later
@@ -227,6 +235,7 @@ Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form
 
 | Slice | Contents |
 |-------|----------|
+| **v1.9 Practice + milestones** | Practice setup modal, weak-finger hints, Hub/Results milestone surfacing |
 | **v1.8 Local profiles** | UUID store, per-profile analytics, hub switcher, profile export |
 | **v1.7 Paste practice** | Hub paste modal, charset filter, arena restart |
 | **v1.6.1 Insights** | Stats Insights + soft Focus/Daily length tuning |
@@ -288,6 +297,6 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story plus **Daily**, **Insights**, **paste practice**, and **local profiles** is shipped through **v1.8**.
+AxiType’s core story plus **Daily**, **Insights**, **paste practice**, **local profiles**, **practice setup**, and **milestone surfacing** is shipped through **v1.9**.
 
-**Next:** milestone surfacing in Results/Hub or Insights polish. **Not next:** PWA, achievement catalogs, streaks, or collection walls. Cloud accounts can sync the same `axitype.profile` bundle later.
+**Next:** Insights-driven copy / gate tweaks when play data justifies them. **Not next:** PWA, achievement catalogs, streaks, or collection walls. Cloud accounts can sync the same `axitype.profile` bundle later.

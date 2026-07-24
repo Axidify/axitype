@@ -11,7 +11,16 @@ import {
 } from "../game/levels";
 import type { ProfileRecord } from "../lib/profiles";
 import { formBadgeKey, type ProgressState } from "../lib/storage";
+import type { PracticeConfig } from "../game/practiceSetup";
+import { practiceMissCounts } from "../game/practiceSetup";
+import {
+  campaignStarSummary,
+  hubDailyBestLabel,
+  hubGauntletBestLabel,
+  retrainBadgeSummary,
+} from "../game/milestones";
 import { PastePracticeModal } from "./PastePracticeModal";
+import { PracticeSetupModal } from "./PracticeSetupModal";
 import { ProfileSwitcher } from "./ProfileSwitcher";
 import { RetrainIntro } from "./RetrainIntro";
 import styles from "./LevelHub.module.css";
@@ -27,7 +36,7 @@ interface LevelHubProps {
   onDeleteProfile: (profileId: string) => { ok: true } | { ok: false; error: string };
   onTrack: (track: Track) => void;
   onPlayLevel: (id: number) => void;
-  onPractice: (timedSeconds?: number) => void;
+  onStartPractice: (config: PracticeConfig) => void;
   onPastePractice: (rawText: string) => void;
   onDaily: () => void;
   onGauntlet: () => void;
@@ -65,7 +74,7 @@ export function LevelHub({
   onDeleteProfile,
   onTrack,
   onPlayLevel,
-  onPractice,
+  onStartPractice,
   onPastePractice,
   onDaily,
   onGauntlet,
@@ -80,6 +89,7 @@ export function LevelHub({
   onDismissRetrainIntro,
 }: LevelHubProps) {
   const [pasteOpen, setPasteOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const demo = progress.coachPrefs.demoMode;
   const continueId = Math.min(progress.unlockedLevel, 12);
   const gauntletOpen = isGauntletUnlocked(progress.unlockedLevel, demo);
@@ -87,6 +97,8 @@ export function LevelHub({
   const dateKey = localDateKey();
   const dailyBest = todaysDailyBest(progress.dailyBest, dateKey);
   const gate = accuracyGate(progress.track);
+  const milestoneLine =
+    retrainBadgeSummary(progress, demo) ?? campaignStarSummary(progress);
   const showExplainer = !progress.coachPrefs.seenTrackExplainer;
   const showRetrainIntro =
     progress.track === "retrain" && !progress.coachPrefs.seenRetrainIntro;
@@ -130,8 +142,8 @@ export function LevelHub({
           <button type="button" className={styles.primary} onClick={() => onPlayLevel(continueId)}>
             Continue · Mission {continueId}
           </button>
-          <button type="button" className={styles.secondary} onClick={() => onPractice()}>
-            Practice
+          <button type="button" className={styles.secondary} onClick={() => setPracticeOpen(true)}>
+            Practice…
           </button>
           <button
             type="button"
@@ -148,13 +160,7 @@ export function LevelHub({
             title="One shared prompt for today — chase your local best"
           >
             Daily · {formatDailyLabel(dateKey)}
-            {dailyBest ? ` · best ${dailyBest.wpm}` : ""}
-          </button>
-          <button type="button" className={styles.secondary} onClick={() => onPractice(60)}>
-            60s sprint
-          </button>
-          <button type="button" className={styles.secondary} onClick={() => onPractice(90)}>
-            90s sprint
+            {dailyBest ? ` · best ${hubDailyBestLabel(dailyBest)}` : ""}
           </button>
           <button
             type="button"
@@ -182,12 +188,15 @@ export function LevelHub({
             }
           >
             Gauntlet
-            {progress.gauntletBest ? ` · best ${progress.gauntletBest.wavesCleared}` : ""}
+            {progress.gauntletBest
+              ? ` · best ${hubGauntletBestLabel(progress.gauntletBest)}`
+              : ""}
           </button>
           <button type="button" className={styles.secondary} onClick={onStats}>
             Stats
           </button>
         </div>
+        {milestoneLine && <p className={styles.milestones}>{milestoneLine}</p>}
       </header>
 
       <div className={styles.tracks}>
@@ -341,6 +350,18 @@ export function LevelHub({
         </div>
       </div>
     </section>
+    {practiceOpen && (
+      <PracticeSetupModal
+        unlockedKeys={unlockedKeys}
+        keyStats={progress.keyStats}
+        missCounts={practiceMissCounts(progress)}
+        onClose={() => setPracticeOpen(false)}
+        onStart={(config) => {
+          setPracticeOpen(false);
+          onStartPractice(config);
+        }}
+      />
+    )}
     {pasteOpen && (
       <PastePracticeModal
         unlockedKeys={unlockedKeys}
