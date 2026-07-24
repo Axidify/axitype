@@ -35,6 +35,8 @@ export interface AnalyticsInsights {
   focusAccuracyLength: number;
   /** Soft length bias for Daily prompts (chars). */
   dailyPromptLength: number;
+  /** Multiplier for Practice prompt length when restarts climb (0.85 eased, else 1). */
+  practiceLengthScale: number;
 }
 
 const EMPTY_DRILLS: Record<DrillStartSource, number> = {
@@ -140,6 +142,12 @@ export function summarizeAnalytics(events: AnalyticsEvent[]): AnalyticsInsights 
   const dailyPromptLength =
     dailyStarts >= 4 && dailyRestarts / dailyStarts >= 0.4 ? 90 : 110;
 
+  const practice = byMode.practice;
+  const practiceRestarts = practice?.restarted ?? 0;
+  const practiceStarts = practice?.started ?? 0;
+  const practiceLengthScale =
+    practiceStarts >= 4 && practiceRestarts / practiceStarts >= 0.4 ? 0.85 : 1;
+
   const tips = buildTips({
     finishRate,
     outcomes,
@@ -155,8 +163,11 @@ export function summarizeAnalytics(events: AnalyticsEvent[]): AnalyticsInsights 
     focusRestarts,
     dailyStarts,
     dailyRestarts,
+    practiceStarts,
+    practiceRestarts,
     focusAccuracyLength,
     dailyPromptLength,
+    practiceLengthScale,
   });
 
   return {
@@ -177,7 +188,32 @@ export function summarizeAnalytics(events: AnalyticsEvent[]): AnalyticsInsights 
     tips,
     focusAccuracyLength,
     dailyPromptLength,
+    practiceLengthScale,
   };
+}
+
+/** Top warn-style coaching line for the hub; null when nothing actionable. */
+export function hubCoachingTip(insights: AnalyticsInsights): AnalyticsTip | null {
+  return insights.tips.find((t) => t.severity === "warn") ?? null;
+}
+
+/** Extra mission Results hint when accuracy gate fails and finish rate is low. */
+export function missionGateCoaching(
+  insights: AnalyticsInsights,
+  accuracyBelowGate: boolean,
+): string | null {
+  if (!accuracyBelowGate || insights.finishRate == null || insights.finishRate >= 0.55) {
+    return null;
+  }
+  return "Recent rounds often end early — try a short Practice sprint before retrying this mission.";
+}
+
+/** Focus speed-transition nudge when overall finish rate is shaky. */
+export function focusSpeedCoaching(insights: AnalyticsInsights): string | null {
+  if (insights.finishRate != null && insights.finishRate < 0.55) {
+    return "Recent finishes have been choppy — practicing accuracy again before raising speed is fine.";
+  }
+  return null;
 }
 
 function buildTips(input: {
@@ -195,8 +231,11 @@ function buildTips(input: {
   focusRestarts: number;
   dailyStarts: number;
   dailyRestarts: number;
+  practiceStarts: number;
+  practiceRestarts: number;
   focusAccuracyLength: number;
   dailyPromptLength: number;
+  practiceLengthScale: number;
 }): AnalyticsTip[] {
   const tips: AnalyticsTip[] = [];
 
@@ -230,6 +269,18 @@ function buildTips(input: {
         input.dailyPromptLength < 110
           ? "Today's Daily length is eased based on your restart pattern."
           : "A few more restarts will ease Daily length automatically.",
+    });
+  }
+
+  if (input.practiceStarts >= 4 && input.practiceRestarts / input.practiceStarts >= 0.4) {
+    tips.push({
+      id: "practice-restarts",
+      severity: "warn",
+      title: "Practice restarts often",
+      detail:
+        input.practiceLengthScale < 1
+          ? "Practice prompts are shortened automatically until sessions feel steadier."
+          : "A few more restarts will shorten Practice prompts automatically.",
     });
   }
 

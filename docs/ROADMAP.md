@@ -1,20 +1,28 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v1.9.1  
-**Status:** Released — compact hub menu + drill gate hints.
+**Current version:** v2.0.0  
+**Status:** Released — analytics-informed coaching across hub, practice, focus, and results.
 
 ---
 
-## Current focus (v2.0 — candidates)
+## Current focus (v2.1 — candidates)
 
 **Ship next:**
 
-1. Further analytics-informed copy / gate tweaks
+1. E2E smoke (Playwright) or Focus/Gauntlet UX polish
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v1.9.1 — Hub menu):**
+**Just shipped (v2.0 — Insights coaching):**
+
+- Practice prompt length eases when restart rate climbs (like Focus/Daily)
+- Hub surfaces top warn-style insight from play analytics (non-demo)
+- Mission Results adds finish-rate coaching when accuracy gate fails
+- Focus speed gate nudge when overall finish rate is shaky
+- Stats tuning note includes Practice length scale
+
+**Previously shipped (v1.9.1 — Hub menu):**
 
 - Compact hub header — brand + Stats/Profile top bar, play card with track + Continue
 - Single-row mode pills (Practice, Paste, Daily, Focus, Gauntlet)

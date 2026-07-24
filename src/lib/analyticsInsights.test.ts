@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AnalyticsEvent } from "./analytics";
-import { summarizeAnalytics } from "./analyticsInsights";
+import { summarizeAnalytics, hubCoachingTip, missionGateCoaching } from "./analyticsInsights";
 
 function base(partial: AnalyticsEvent): AnalyticsEvent {
   return { demoMode: false, track: "learn", at: 1, ...partial } as AnalyticsEvent;
@@ -61,6 +61,27 @@ describe("analyticsInsights", () => {
     expect(insights.tips.some((t) => t.id === "low-finish")).toBe(true);
   });
 
+  it("shortens practice length after many practice restarts", () => {
+    const events: AnalyticsEvent[] = [];
+    for (let i = 0; i < 5; i++) {
+      events.push(
+        base({ type: "roundStarted", levelId: "practice", track: "learn", demoMode: false, at: i * 2 }),
+      );
+      events.push(
+        base({
+          type: "roundRestarted",
+          levelId: "practice",
+          track: "learn",
+          demoMode: false,
+          at: i * 2 + 1,
+        }),
+      );
+    }
+    const insights = summarizeAnalytics(events);
+    expect(insights.practiceLengthScale).toBe(0.85);
+    expect(insights.tips.some((t) => t.id === "practice-restarts")).toBe(true);
+  });
+
   it("shortens focus length after many focus restarts", () => {
     const events: AnalyticsEvent[] = [];
     for (let i = 0; i < 5; i++) {
@@ -94,5 +115,17 @@ describe("analyticsInsights", () => {
     ]);
     expect(insights.abandoned).toBe(0);
     expect(insights.tips[0]?.id).toBe("need-data");
+  });
+
+  it("surfaces hub warn tip and mission coaching when finish rate is low", () => {
+    const events: AnalyticsEvent[] = [];
+    for (let i = 0; i < 6; i++) {
+      events.push(base({ type: "roundStarted", levelId: 1, track: "learn", demoMode: false, at: i * 2 }));
+      events.push(base({ type: "roundAbandoned", levelId: 1, track: "learn", demoMode: false, at: i * 2 + 1 }));
+    }
+    const insights = summarizeAnalytics(events);
+    expect(hubCoachingTip(insights)?.id).toBe("low-finish");
+    expect(missionGateCoaching(insights, true)).toContain("Practice sprint");
+    expect(missionGateCoaching(insights, false)).toBeNull();
   });
 });

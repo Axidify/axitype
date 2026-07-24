@@ -64,6 +64,7 @@ interface ResultsProps {
   } | null;
   missionSummary?: MissionMilestone | null;
   drillSummary?: DrillMilestone | null;
+  insightsCoaching?: string | null;
   onRetry: () => void;
   onNext: (levelId: number) => void;
   onHub: () => void;
@@ -94,6 +95,7 @@ export function Results({
   dailySummary = null,
   missionSummary = null,
   drillSummary = null,
+  insightsCoaching = null,
   onRetry,
   onNext,
   onHub,
@@ -311,6 +313,7 @@ export function Results({
           </>
         )}
         {statusLine && <p className={statusTone}>{statusLine}</p>}
+        {insightsCoaching && <p className={styles.insightsCoaching}>{insightsCoaching}</p>}
         {isGauntlet && gauntletBest && !demoMode && (
           <p className={styles.gauntletBest}>
             Best: {gauntletBest.wavesCleared} waves · {gauntletBest.totalScore.toLocaleString()} score

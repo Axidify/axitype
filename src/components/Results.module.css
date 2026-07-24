@@ -98,6 +98,14 @@
   max-width: 36rem;
 }
 
+.insightsCoaching {
+  margin: 0.35rem 0 0;
+  color: color-mix(in srgb, var(--accent) 70%, var(--ink-muted));
+  font-size: 0.88rem;
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
 .stats {
   display: flex;
   gap: 2rem;
