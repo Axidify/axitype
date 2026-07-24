@@ -392,7 +392,7 @@ export function buildFocusPrompt(
   const finger = rehabFinger(plan.lockFinger ?? weakestTypingFinger(missCounts));
   const boost = plan.weakKey ?? primaryFocusKey(plan, missCounts);
   const complexity = focusPromptComplexity(phase, speedTier);
-  const fingerKeys = keysForFinger(finger).filter((k) => /[a-z;,\.']/.test(k));
+  const fingerKeys = keysForFinger(finger).filter((k) => /[a-z;,.']/.test(k));
 
   switch (plan.kind) {
     case "oneFinger":

@@ -65,10 +65,7 @@ export function Stats({
     [progress.bestByLevel, progress.levelStars, progress.unlockedLevel],
   );
 
-  const insights = useMemo(
-    () => summarizeAnalytics(loadAnalytics()),
-    [progress.roundHistory.length, progress.dailyBest?.attempts, progress.dailyBest?.at],
-  );
+  const insights = summarizeAnalytics(loadAnalytics());
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

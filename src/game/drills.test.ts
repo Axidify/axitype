@@ -70,7 +70,7 @@ describe("thumb exclusion", () => {
     expect([...text].some((c) => c !== " ")).toBe(true);
     for (const ch of text) {
       if (ch === " ") continue;
-      expect(/[a-z;,\.']/.test(ch)).toBe(true);
+      expect(/[a-z;,.']/.test(ch)).toBe(true);
     }
   });
 });

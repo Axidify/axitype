@@ -108,7 +108,7 @@ export const LEVELS: LevelDef[] = [
   {
     id: 11,
     title: "Light punctuation",
-    keys: "abcdefghijklmnopqrstuvwxyz .,\'",
+    keys: "abcdefghijklmnopqrstuvwxyz .,'",
     length: 140,
     wpmLearn: 30,
     wpmRetrain: 24,
