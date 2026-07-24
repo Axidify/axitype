@@ -1,8 +1,8 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.9.0  
-**Status:** Released — Focus gate polish and full-session E2E.
+**Current version:** v2.10.0  
+**Status:** Released — LevelHub hierarchy polish from playtest feedback.
 
 ---
 
@@ -14,7 +14,14 @@
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.9 — Focus polish):**
+**Just shipped (v2.10 — LevelHub polish):**
+
+- Current mission highlight (accent border + Current badge)
+- Collapse chevrons on Rules & settings / Habit drills
+- Colored stars, lock icons on locked rows, Form ✓ tooltip
+- Practice modes label to separate chips from Learn/Retrain
+
+**Previously shipped (v2.9 — Focus polish):**
 
 - FocusGate Space/Escape shortcuts + kbd hint on primary CTA
 - Speed tier progress copy (`Speed tier N of 3 cleared`)
@@ -159,7 +166,7 @@ AxiType is a browser-based touch typing tutor with:
 
 **Positioning:** Stronger than most apps at habit rehab and form coaching; behind Keybr on per-key analytics depth and behind Monkeytype on speed-test variety / social features. Compete on Retrain / Focus, not breadth.
 
-**Main gaps vs mature typing apps:** optional shared-device profiles; PWA install (deferred); accounts/leaderboards (intentionally deferred).
+**Main gaps vs mature typing apps:** PWA install (deferred); accounts/leaderboards (intentionally deferred). Local profiles shipped in v1.8.
 
 **Progression scope:**
 
@@ -201,6 +208,12 @@ AxiType is a browser-based touch typing tutor with:
 | Practice setup modal | **v1.9** | Duration + focus chips; weak finger from recent misses |
 | Hub/Results milestone surfacing | **v1.9** | Form badges, star deltas, PB callouts — no trophy catalog |
 | Compact hub menu | **v1.9.1** | Play card, mode pills, collapsible rules/drills |
+| Insights-driven coaching copy | **v2.0** | Hub warn, mission finish-rate, Focus speed nudge |
+| E2E smoke (Playwright) | **v2.1–v2.7** | Learn/Retrain, Focus, Gauntlet, Daily, Practice, Paste; CI in v2.4 |
+| Focus/Gauntlet UX polish | **v2.2** | Failure hints, wave gate strip, gate copy, Results recap |
+| Component + progression tests | **v2.6** | `PromptLine`, `Results`, `progression.ts` |
+| Lint + Focus gate polish | **v2.8–v2.9** | Zero-warning oxlint; FocusGate shortcuts, tier copy, full-session E2E |
+| LevelHub hierarchy polish | **v2.10** | Current mission highlight, chevrons, colored stars, locks, Form tip |
 
 ---
 
@@ -219,12 +232,24 @@ AxiType is a browser-based touch typing tutor with:
 
 ## Priority tiers
 
-| Tier | Meaning | Target |
-|------|---------|--------|
-| **P0** | Highest ROI for the next release | v1.8 candidates below |
-| **P1** | Core follow-ons | Hub polish, analytics copy |
-| **P2** | Nice polish | E2E, Focus/Gauntlet UX, PWA |
-| **P3** | Demand-gated / strategic | Cloud later |
+| Tier | Meaning | Status (July 2026) |
+|------|---------|-------------------|
+| **P0** | Core product + shared-device | **Done** — profiles, milestones, insights baseline |
+| **P1** | Hub/mode polish, analytics copy | **Mostly done** — v2.x closed E2E, Focus/Gauntlet, component tests |
+| **P2** | CI, test depth, installability | **CI + tests done**; PWA deferred |
+| **P3** | Demand-gated / strategic | Deferred — achievements, cloud, leaderboards |
+
+---
+
+## Plan status (July 2026)
+
+**Product vision for v1.x–v2.x: feature-complete.** Learn/Retrain campaign, all hub modes, profiles, Insights, and milestone surfacing are shipped.
+
+**Quality bar for v2.x: met.** GitHub Actions CI, 153 unit/component tests, 10 E2E smoke specs (all hub modes + Focus depth + Gauntlet fail), zero lint warnings.
+
+**Only active P0 tail:** analytics-informed copy / gate tweaks when local play data justifies more (v3.0 candidate — not a greenfield feature).
+
+**Explicitly not planned near-term:** PWA, achievement catalogs, streaks, cloud accounts, leaderboards, missions beyond 12.
 
 ---
 
@@ -252,21 +277,27 @@ AxiType is a browser-based touch typing tutor with:
 
 Surfaced existing milestones in Hub/Results — Form badges, star deltas, mission PBs, Daily/Gauntlet PB labels, Gauntlet gap-to-best. No trophy catalog.
 
-### Analytics-informed copy / gate tweaks
+### Analytics-informed copy / gate tweaks *(partial — v3.0)*
 
 **Impact:** Medium · **Effort:** Low
 
-Insights + soft length tuning shipped in v1.6.1. Further gate/copy changes only when local play data justifies them.
+**Shipped baseline:** v1.6.1 soft length tuning; v2.0 hub warn, mission finish-rate coaching, Focus speed nudge, Practice length scale in Stats.
+
+**Still open:** further gate/copy changes only when local play data justifies them — no standing backlog until playtesting or analytics surfaces a gap.
 
 ---
 
 ## P1 / P2 — Polish
 
-| Item | Notes |
-|------|--------|
-| More Focus/Gauntlet UX polish | From playtesting |
-| E2E smoke (Playwright) | start → type → results per track |
-| PWA / offline install | Deferred — revisit when distribution matters |
+| Item | Status | Notes |
+|------|--------|-------|
+| Focus/Gauntlet UX polish | ✅ **v2.2, v2.9** | Failure hints, wave strip, gate copy, shortcuts, tier progress |
+| LevelHub hierarchy polish | ✅ **v2.10** | Current mission, chevrons, stars, locks, Form tip, Practice modes label |
+| E2E smoke (Playwright) | ✅ **v2.1–v2.7** | 10 specs — all hub modes + Focus full session + Gauntlet fail |
+| GitHub Actions CI | ✅ **v2.4** | `npm run ci` local parity |
+| Component / progression tests | ✅ **v2.6** | `PromptLine`, `Results`, `stageLocked` |
+| Lint clean | ✅ **v2.8** | Zero oxlint warnings |
+| PWA / offline install | ⏸ Deferred | Revisit when distribution matters |
 
 ---
 
@@ -298,13 +329,31 @@ Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form
 
 ## Suggested release slices
 
-### v2.0 — *(next)*
-- Insights-driven copy / gate tweaks
+### v3.0 — *(next candidate)*
+- Insights-driven copy / gate tweaks when play data warrants
+- Broader playtest polish (no fixed backlog)
 
 ### Later
 - PWA / offline install (when distribution matters)
+- P3 items (cloud, leaderboards, achievements) — demand-gated only
 
-### Shipped
+### Shipped (v2.x)
+
+| Slice | Contents |
+|-------|----------|
+| **v2.10 LevelHub polish** | Current mission highlight, collapse chevrons, colored stars, lock icons, Form tip, Practice modes label |
+| **v2.9 Focus gate** | Shortcuts, tier copy, full-session E2E, FocusGate tests |
+| **v2.8 Lint** | Zero-warning oxlint pass |
+| **v2.7 E2E depth** | Focus speed round, Gauntlet fail path |
+| **v2.6 Component tests** | `PromptLine`, `Results`, `progression.ts` |
+| **v2.5 E2E hub** | Daily, Practice, Paste smoke |
+| **v2.4 CI** | GitHub Actions + `npm run ci` |
+| **v2.3 E2E** | Focus + Gauntlet smoke |
+| **v2.2 Focus/Gauntlet UX** | In-run coaching, gate copy, Results recap |
+| **v2.1 E2E** | Learn + Retrain smoke, Playwright bootstrap |
+| **v2.0 Insights coaching** | Analytics-informed hub/mission/Focus copy |
+
+### Shipped (v1.x)
 
 | Slice | Contents |
 |-------|----------|
@@ -336,13 +385,15 @@ Audited July 2026: a catalog + streak counters + trophy wall conflicts with Form
 
 ## Technical health (ongoing)
 
-| Item | Priority | Notes |
-|------|----------|-------|
-| Component tests for `PromptLine`, `Results` | Medium | Layout regressions are costly |
-| E2E smoke (Playwright) | Medium | One happy path per track |
-| `calcStars` / unlock / `stageLocked` tests | Medium | Retrain drill gate |
-| `storage` / backup / analytics tests | Low–medium | Started (`progressBackup`, `analytics`, `statsSummary`, `pastePractice`) |
+| Item | Priority | Status |
+|------|----------|--------|
+| Component tests for `PromptLine`, `Results` | Medium | ✅ v2.6 |
+| E2E smoke (Playwright) | Medium | ✅ 10 specs — all hub modes + Focus/Gauntlet depth (v2.1–v2.7, v2.9) |
+| `calcStars` / unlock / `stageLocked` tests | Medium | **Partial** — `calcStars` in `engine.test.ts`; `stageLocked` in `progression.test.ts` |
+| `storage` / backup / analytics tests | Low–medium | **Partial** — `progressBackup`, `analytics`, `statsSummary`, `pastePractice` |
 | Chart sample rate vs history window | Low | Fine for now |
+| Lint (oxlint) | Medium | ✅ Zero warnings (v2.8) |
+| CI on `master` | Medium | ✅ lint → unit → build → e2e (v2.4) |
 
 ---
 
@@ -371,6 +422,10 @@ Events live in `axitype.analytics.v1` (capped at 200). Progress outcomes still i
 
 ## Summary
 
-AxiType’s core story plus **Daily**, **Insights**, **paste practice**, **local profiles**, **practice setup**, **milestone surfacing**, and a **compact hub** is shipped through **v1.9.1**.
+AxiType’s **v1.x product plan is complete** through **v1.9.1** (campaign, all hub modes, profiles, Insights, milestones, compact hub).
 
-**Next:** Insights-driven copy / gate tweaks when play data justifies them. **Not next:** PWA, achievement catalogs, streaks, or collection walls. Cloud accounts can sync the same `axitype.profile` bundle later.
+The **v2.x quality plan is complete** through **v2.10.0** (CI, 153 unit tests, 10 E2E specs, component tests, lint clean, Focus + LevelHub polish).
+
+**Next (v3.0):** insights-driven copy / gate tweaks when play data warrants, plus ad-hoc playtest polish — no fixed feature backlog.
+
+**Not next:** PWA, achievement catalogs, streaks, collection walls, cloud accounts, or leaderboards. Cloud sync can reuse the `axitype.profile` bundle when/if demand appears.

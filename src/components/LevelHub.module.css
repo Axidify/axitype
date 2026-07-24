@@ -74,12 +74,24 @@
   font-weight: 650;
 }
 
+.modesBlock {
+  margin-bottom: 0.5rem;
+}
+
+.modesLabel {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+}
+
 .modes {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.4rem;
-  margin-bottom: 0.5rem;
 }
 
 .coachingTip {
@@ -180,11 +192,34 @@
   list-style: none;
   text-align: center;
   padding: 0.35rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
 }
 
 .hubDetails summary::-webkit-details-marker,
 .drillsDetails summary::-webkit-details-marker {
   display: none;
+}
+
+.hubDetails summary::before,
+.drillsDetails summary::before {
+  content: "";
+  width: 0.35rem;
+  height: 0.35rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  margin-top: -0.05rem;
+}
+
+.hubDetails[open] summary::before,
+.drillsDetails[open] summary::before {
+  transform: rotate(45deg);
+  margin-top: -0.15rem;
 }
 
 .hubDetailsBody {
@@ -325,8 +360,32 @@
   border-color: var(--accent);
 }
 
+.current {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--lane));
+  background: color-mix(in srgb, var(--accent) 8%, white);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.current .num {
+  background: var(--accent);
+}
+
+.currentBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .locked {
   opacity: 0.45;
+}
+
+.lockIcon {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+  opacity: 0.9;
 }
 
 .num {
@@ -363,9 +422,17 @@
 }
 
 .stars {
-  color: var(--ink-muted);
   font-size: 0.85rem;
   letter-spacing: 0.04em;
+  display: inline-flex;
+}
+
+.starsFilled {
+  color: var(--accent);
+}
+
+.starsEmpty {
+  color: color-mix(in srgb, var(--ink-muted) 55%, var(--lane));
 }
 
 .lockHint {
