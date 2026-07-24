@@ -1,20 +1,25 @@
 # AxiType — Product Roadmap
 
 **Last updated:** July 2026  
-**Current version:** v2.3.0  
-**Status:** Released — E2E smoke covers Focus and Gauntlet happy paths.
+**Current version:** v2.4.0  
+**Status:** Released — GitHub Actions CI (lint, unit, build, E2E).
 
 ---
 
-## Current focus (v2.4 — candidates)
+## Current focus (v2.5 — candidates)
 
 **Ship next:**
 
-1. Further mode polish or CI wiring for E2E
+1. Further mode polish or expand E2E coverage
 
 **Deferred for now:** PWA / offline install; achievement catalogs / streaks / collection walls.
 
-**Just shipped (v2.3 — E2E expansion):**
+**Just shipped (v2.4 — CI):**
+
+- GitHub Actions workflow on `master` push/PR — lint, Vitest, build, Playwright smoke
+- `npm run ci` local parity script (lint → unit → build → e2e)
+
+**Previously shipped (v2.3 — E2E expansion):**
 
 - Focus smoke — hub → accuracy round → FocusGate speed transition
 - Gauntlet smoke — hub → wave 1 clear → wave 2 coach strip
